@@ -12,3 +12,9 @@ Server::~Server()
 {
     std::cout << "Server is now down" << std::endl;
 }
+
+
+int Server::get_port()
+{
+    return (_port);
+}

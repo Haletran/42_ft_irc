@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Common.hpp"
+#include "Global.hpp"
 
 class Client {
     private:

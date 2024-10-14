@@ -1,6 +1,11 @@
-#include "../includes/Common.hpp"
+#include "../includes/Global.hpp"
 #include <stdexcept>
 #include <stdlib.h>
+#include <unistd.h>
+
+// Source :
+// https://reactive.so/post/42-a-comprehensive-guide-to-ft_irc/
+// https://www.keypuncher.net/blog/network-sockets-in-c
 
 int main(int argc, char **argv)
 {
@@ -14,10 +19,70 @@ int main(int argc, char **argv)
         std::string password = argv[2];
         int port = static_cast<int>(std::strtod(argv[1], NULL));
         Server instance(port ,password);
-        std::cout << "Waiting for connections..." << std::endl;
-        while (1)
-        {
+        int server_fd;
+
+        server_fd = socket(AF_INET, SOCK_STREAM, 0);
+        if (server_fd == -1)
+            throw std::runtime_error("Error creating socket");
+
+
+        sockaddr_in serverAddress;
+        serverAddress.sin_family = AF_INET;
+        serverAddress.sin_port = htons(port); // Port number
+        serverAddress.sin_addr.s_addr = INADDR_ANY; // Bind to any available interface
+
+        if (bind(server_fd, (struct sockaddr *)&serverAddress, sizeof(serverAddress)) == -1) {
+            std::cerr << "Error binding socket" << std::endl;
+            close(server_fd);
+            return 1;
         }
+
+        // Listen for connections
+            if (listen(server_fd, 5) == -1) {
+                std::cerr << "Error listening" << std::endl;
+                close(server_fd);
+                return 1;
+            }
+
+            // Accept connections
+            sockaddr_in clientAddress;
+            socklen_t clientSize = sizeof(clientAddress);
+            int clientSocket = accept(server_fd, (struct sockaddr *)&clientAddress, &clientSize);
+            if (clientSocket == -1) {
+                std::cerr << "Error accepting connection" << std::endl;
+                close(server_fd);
+                return 1;
+            }
+
+            // get connection
+            char clientIP[INET_ADDRSTRLEN];
+            inet_ntop(AF_INET, &(clientAddress.sin_addr), clientIP, INET_ADDRSTRLEN);
+            int clientPort = ntohs(clientAddress.sin_port);
+            std::cout << "Accepted connection from " << clientIP << ":" << clientPort
+                      << std::endl;
+
+            // Send data to the client
+            const char *message = "Hello from server!\n";
+            send(clientSocket, message, strlen(message), 0);
+
+            // Received data from the client
+            char buffer[1024];
+            while (1)
+            {
+                ssize_t bytes_read = read(clientSocket, buffer, sizeof(buffer) - 1);
+                if (bytes_read < 0) {
+                    close(clientSocket);
+                    close(server_fd);
+                    return 1;
+                }
+
+                buffer[bytes_read] = '\0'; // Null-terminate the buffer
+                std::cout << "Received message: " << buffer << std::endl;
+            }
+
+            // Close sockets
+            close(clientSocket);
+            close(server_fd);
     } catch (std::runtime_error &e) {
         std::cerr << "Error : " << e.what() << std::endl;
     }
