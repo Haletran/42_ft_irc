@@ -1,7 +1,6 @@
 #include "../includes/Global.hpp"
-#include <stdexcept>
-#include <stdlib.h>
-#include <unistd.h>
+#include <vector>
+
 
 // Source :
 // https://reactive.so/post/42-a-comprehensive-guide-to-ft_irc/
@@ -66,23 +65,24 @@ int main(int argc, char **argv)
             send(clientSocket, message, strlen(message), 0);
 
             // Received data from the client
-            char buffer[1024];
+            std::vector<char> msg_buffer(1024);
             while (1)
             {
-                ssize_t bytes_read = read(clientSocket, buffer, sizeof(buffer) - 1);
+                ssize_t bytes_read = read(clientSocket, msg_buffer.data(), msg_buffer.size() - 1);
                 if (bytes_read < 0) {
                     close(clientSocket);
                     close(server_fd);
                     return 1;
                 }
-
-                buffer[bytes_read] = '\0'; // Null-terminate the buffer
-                std::cout << "Received message: " << buffer << std::endl;
+                if (bytes_read == 0)
+                    break;
+                instance.login(msg_buffer);
+                msg_buffer.clear();
+                msg_buffer.resize(1024);
             }
 
             // Close sockets
             close(clientSocket);
-            close(server_fd);
     } catch (std::runtime_error &e) {
         std::cerr << "Error : " << e.what() << std::endl;
     }

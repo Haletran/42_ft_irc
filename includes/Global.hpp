@@ -15,6 +15,10 @@
 #include <cerrno>            // For error handling
 #include <sys/stat.h>        // For fstat
 #include <sys/types.h>       // For lseek
+#include <stdexcept>
+#include <stdlib.h>
+#include <unistd.h>
+
 
 #define DEFAULT_PORT 6667
 

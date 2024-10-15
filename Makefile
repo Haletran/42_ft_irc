@@ -18,7 +18,8 @@ NAME := ft_irc
 CXX := c++
 CFLAGS := -Wextra -Wall -Werror -g -std=c++98
 SRCS := srcs/main.cpp \
-		srcs/Server.cpp
+		srcs/Server.cpp \
+		srcs/Client.cpp
 HEADERS := includes/Server.hpp includes/Client.hpp includes/Common.hpp
 OBJS := $(SRCS:.cpp=.o)
 
