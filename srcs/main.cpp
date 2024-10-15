@@ -61,7 +61,7 @@ int main(int argc, char **argv)
                       << std::endl;
 
             // Send data to the client
-            const char *message = "Hello from server!\n";
+            const char *message = "--IRC SERVER--\n";
             send(clientSocket, message, strlen(message), 0);
 
             // Received data from the client
