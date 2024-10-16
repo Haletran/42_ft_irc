@@ -49,6 +49,8 @@ int main(int argc, char **argv)
                         fds[i].fd = new_socket;
                         fds[i].events = POLLIN;
                         std::cout << "Added to poll list at index " << i << std::endl;
+                        std::string preAuthMessage = "NOTICE AUTH :*** Welcome to the IRC server! Please authenticate with PASS, NICK, and USER commands.\r\n";
+                        send(new_socket, preAuthMessage.c_str(), preAuthMessage.length(), 0);
                         break;
                     }
                 }
@@ -64,7 +66,8 @@ int main(int argc, char **argv)
                         close(fds[i].fd);
                         fds[i].fd = -1;
                     } else {
-                        instance.login(buffer);
+                        std::cout << buffer.data() << std::endl;
+                        instance.login(buffer, new_socket);
                         buffer.clear();
                         buffer.resize(1024);
                     }

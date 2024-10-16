@@ -1,6 +1,6 @@
 #include "../includes/Client.hpp"
 
-Client::Client(int state) : _state(state)
+Client::Client(int state, int client_socket) : _state(state), _client_socket(client_socket)
 {
 }
 
@@ -51,4 +51,10 @@ std::string Client::get_username()
 std::string Client::get_nickname()
 {
     return (_nickname);
+}
+
+
+int Client::get_socket()
+{
+    return (_client_socket);
 }

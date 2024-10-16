@@ -45,7 +45,7 @@ Server::~Server()
     std::cout << "Server is now down" << std::endl;
 }
 
-void Server::login(std::vector<char> msgBuffer)
+void Server::login(std::vector<char> msgBuffer, int client_socket)
 {
     std::string cmd_array[3] = {"PASS", "USER", "NICK"};
     bool found = false;
@@ -76,7 +76,7 @@ void Server::login(std::vector<char> msgBuffer)
                         {
                             if (input == _password)
                             {
-                                Client new_client(0);
+                                Client new_client(0, client_socket);
                                 listUser.push_back(new_client);
                                 std::cout << "Password accepted, client added" << std::endl;
                             }
@@ -118,7 +118,7 @@ void Server::login(std::vector<char> msgBuffer)
 Client Server::get_client()
 {
     if (listUser.empty())
-        return Client(0);
+        return Client(0, 0);
     return listUser.back();
 }
 int Server::get_port(){return (_port);}

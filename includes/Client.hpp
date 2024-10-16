@@ -7,8 +7,9 @@ class Client {
         std::string _username;
         std::string _nickname;
         int _state;
+        int _client_socket;
     public:
-        Client(int _state);
+        Client(int _state, int client_socket);
         Client (const Client& cpy);
         Client &operator=(const Client& src);
         ~Client();
@@ -22,4 +23,5 @@ class Client {
         std::string get_username();
         int get_state();
         std::string get_nickname();
+        int get_socket();
 };

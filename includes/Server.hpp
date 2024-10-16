@@ -20,7 +20,7 @@ class Server {
         ~Server();
 
         int get_port();
-        void login(std::vector<char> msgBuffer);
+        void login(std::vector<char> msgBuffer, int client_socket);
         bool command_parsing();
         Client get_client();
         int get_fd();
