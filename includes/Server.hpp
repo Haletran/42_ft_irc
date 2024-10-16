@@ -19,4 +19,5 @@ class Server {
         int get_port();
         void login(std::vector<char> msgBuffer);
         bool command_parsing();
+        Client get_client();
 };

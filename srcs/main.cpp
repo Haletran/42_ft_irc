@@ -19,6 +19,7 @@ int main(int argc, char **argv)
         int port = static_cast<int>(std::strtod(argv[1], NULL));
         Server instance(port ,password);
         int server_fd;
+        int already_sent = 0;
 
         server_fd = socket(AF_INET, SOCK_STREAM, 0);
         if (server_fd == -1)
@@ -27,7 +28,7 @@ int main(int argc, char **argv)
 
         sockaddr_in serverAddress;
         serverAddress.sin_family = AF_INET;
-        serverAddress.sin_port = htons(port); // Port number
+        serverAddress.sin_port = htons(instance.get_port()); // Port number
         serverAddress.sin_addr.s_addr = INADDR_ANY; // Bind to any available interface
 
         if (bind(server_fd, (struct sockaddr *)&serverAddress, sizeof(serverAddress)) == -1) {
@@ -64,6 +65,7 @@ int main(int argc, char **argv)
             const char *message = "--IRC SERVER--\n";
             send(clientSocket, message, strlen(message), 0);
 
+
             // Received data from the client
             std::vector<char> msg_buffer(1024);
             while (1)
@@ -79,6 +81,11 @@ int main(int argc, char **argv)
                 instance.login(msg_buffer);
                 msg_buffer.clear();
                 msg_buffer.resize(1024);
+                if (instance.get_client().get_state() == 0 && already_sent == 0)
+                {
+                    send(clientSocket, "Welcome to this server :)\n", strlen("Welcome to this server :)\n"), 0);
+                    already_sent++;
+                }
             }
 
             // Close sockets

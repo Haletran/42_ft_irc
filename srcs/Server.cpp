@@ -1,12 +1,17 @@
 #include "../includes/Server.hpp"
+#include "../includes/Client.hpp"
 #include <sstream>
 
 
 Server::Server(int port, std::string password) : _password(password)
 {
     if (port <= 0)
-        throw std::runtime_error("Port is not valid");
-    std::cout << "Server is now running at port " << port << std::endl;
+    {
+        std::cerr << "Error : Port is not valid" << std::endl;
+        std::cerr << "Setting the default port" << std::endl;
+        _port = 6667;
+    }
+    std::cout << "Server is now running at port " << _port << std::endl;
 }
 
 
@@ -42,7 +47,6 @@ void Server::login(std::vector<char> msgBuffer)
                 {
                     if (listUser.empty())
                     {
-                        std::cout << "PASS COMMAND" << std::endl;
                         if (!input.empty())
                         {
                             if (input == _password)
@@ -62,19 +66,19 @@ void Server::login(std::vector<char> msgBuffer)
                     break;
                 }
                 case 1:
-                    if (listUser.back().get_state() == 0)
+                    if (listUser.back().get_state() == 0 && !input.empty())
                     {
                         listUser.back().set_username(input);
                         listUser.back().set_state(1);
-                        std::cout << listUser.back().get_username() << std::endl;
                     }
                     break;
                 case 2:
-                    if (listUser.back().get_state() == 1)
+                    if (listUser.back().get_state() == 1 && !input.empty())
                     {
                         listUser.back().set_state(2);
                         listUser.back().set_nickname(input);
-                        std::cout << listUser.back().get_nickname() << std::endl;
+                        // join default channel
+                        std::cout << "User " << listUser.back().get_username() <<  " created successfully" << std::endl;
                     }
                     break;
             }
@@ -85,6 +89,13 @@ void Server::login(std::vector<char> msgBuffer)
         std::cout << "UNKNOWN COMMAND" << std::endl;
 }
 
+
+Client Server::get_client()
+{
+    if (listUser.empty())
+        return Client(0);
+    return listUser.back();
+}
 
 
 int Server::get_port()
