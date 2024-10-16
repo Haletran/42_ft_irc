@@ -1,11 +1,9 @@
 #include "../includes/Global.hpp"
 #include <vector>
 
-
 // Source :
 // https://reactive.so/post/42-a-comprehensive-guide-to-ft_irc/
 // https://www.keypuncher.net/blog/network-sockets-in-c
-
 int main(int argc, char **argv)
 {
     if (argc <= 2)
@@ -17,79 +15,63 @@ int main(int argc, char **argv)
     try {
         std::string password = argv[2];
         int port = static_cast<int>(std::strtod(argv[1], NULL));
-        Server instance(port ,password);
-        int server_fd;
-        int already_sent = 0;
+        int server_fd = 0;
+        int new_socket;
+        Server instance(port ,password , server_fd);
 
-        server_fd = socket(AF_INET, SOCK_STREAM, 0);
-        if (server_fd == -1)
-            throw std::runtime_error("Error creating socket");
-
-
-        sockaddr_in serverAddress;
-        serverAddress.sin_family = AF_INET;
-        serverAddress.sin_port = htons(instance.get_port()); // Port number
-        serverAddress.sin_addr.s_addr = INADDR_ANY; // Bind to any available interface
-
-        if (bind(server_fd, (struct sockaddr *)&serverAddress, sizeof(serverAddress)) == -1) {
-            std::cerr << "Error binding socket" << std::endl;
-            close(server_fd);
-            return 1;
+        struct pollfd fds[MAX_CLIENTS + 1];
+        memset(fds, 0, sizeof(fds));
+        fds[0].fd = instance.get_fd();
+        fds[0].events = POLLIN;
+        for (int i = 1; i <= MAX_CLIENTS; ++i) {
+            fds[i].fd = -1;
         }
 
-        // Listen for connections
-            if (listen(server_fd, 5) == -1) {
-                std::cerr << "Error listening" << std::endl;
-                close(server_fd);
-                return 1;
+        while (true) {
+            // Call poll() to monitor all file descriptors
+            int activity = poll(fds, MAX_CLIENTS + 1, -1);
+            if (activity < 0) {
+                std::cerr << "Poll error" << std::endl;
+                break;
             }
-
-            // Accept connections
-            sockaddr_in clientAddress;
-            socklen_t clientSize = sizeof(clientAddress);
-            int clientSocket = accept(server_fd, (struct sockaddr *)&clientAddress, &clientSize);
-            if (clientSocket == -1) {
-                std::cerr << "Error accepting connection" << std::endl;
-                close(server_fd);
-                return 1;
-            }
-
-            // get connection
-            char clientIP[INET_ADDRSTRLEN];
-            inet_ntop(AF_INET, &(clientAddress.sin_addr), clientIP, INET_ADDRSTRLEN);
-            int clientPort = ntohs(clientAddress.sin_port);
-            std::cout << "Accepted connection from " << clientIP << ":" << clientPort
-                      << std::endl;
-
-            // Send data to the client
-            const char *message = "--IRC SERVER--\n";
-            send(clientSocket, message, strlen(message), 0);
-
-
-            // Received data from the client
-            std::vector<char> msg_buffer(1024);
-            while (1)
-            {
-                ssize_t bytes_read = read(clientSocket, msg_buffer.data(), msg_buffer.size() - 1);
-                if (bytes_read < 0) {
-                    close(clientSocket);
-                    close(server_fd);
-                    return 1;
-                }
-                if (bytes_read == 0)
+            // CHECK if user connect to the server
+            if (fds[0].revents & POLLIN) {
+                struct sockaddr_in address = instance.get_address();
+                socklen_t addrlen = sizeof(address);
+                new_socket = accept(instance.get_fd(), (struct sockaddr*)&address, &addrlen);
+                if (new_socket < 0) {
+                    std::cerr << "Accept failed" << std::endl;
                     break;
-                instance.login(msg_buffer);
-                msg_buffer.clear();
-                msg_buffer.resize(1024);
-                if (instance.get_client().get_state() == 0 && already_sent == 0)
-                {
-                    send(clientSocket, "Welcome to this server :)\n", strlen("Welcome to this server :)\n"), 0);
-                    already_sent++;
+                }
+                std::cout << "New connection, socket FD is " << new_socket << std::endl;
+                for (int i = 1; i <= MAX_CLIENTS; ++i) {
+                    if (fds[i].fd == -1) {
+                        fds[i].fd = new_socket;
+                        fds[i].events = POLLIN;
+                        std::cout << "Added to poll list at index " << i << std::endl;
+                        break;
+                    }
                 }
             }
 
-            // Close sockets
-            close(clientSocket);
+            // handle message and deconnection
+            std::vector<char> buffer(1024);
+            for (int i = 1; i <= MAX_CLIENTS; ++i) {
+                if (fds[i].fd != -1 && fds[i].revents & POLLIN) {
+                    int valread = read(fds[i].fd, buffer.data(), buffer.size() - 1);
+                    if (valread == 0) {
+                        std::cout << "Client disconnected, socket FD " << fds[i].fd << std::endl;
+                        close(fds[i].fd);
+                        fds[i].fd = -1;
+                    } else {
+                        instance.login(buffer);
+                        buffer.clear();
+                        buffer.resize(1024);
+                    }
+                }
+            }
+        }
+        close(instance.get_fd());
     } catch (std::runtime_error &e) {
         std::cerr << "Error : " << e.what() << std::endl;
     }

@@ -21,6 +21,7 @@
 
 
 #define DEFAULT_PORT 6667
+#define MAX_CLIENTS 10
 
 #include "Server.hpp"
 #include "Client.hpp"
