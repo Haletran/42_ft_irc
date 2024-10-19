@@ -2,6 +2,8 @@
 
 Client::Client()
 {
+	_fd = -1;
+	_auth = false;
 }
 
 int Client::GetFd()
@@ -17,4 +19,14 @@ void Client::SetFd(int fd)
 void Client::SetIp(std::string ip)
 {
 	_ip = ip;
+}
+
+bool Client::GetAuth()
+{
+	return _auth;
+}
+
+void Client::SetAuth(bool auth)
+{
+	_auth = auth;
 }

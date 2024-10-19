@@ -97,9 +97,14 @@ void Server::SerSocket()
 	_pollfds.push_back(newpoll);
 }
 
-void Server::ServerInit()
+void Server::ServerInit(int port, std::string pwd)
 {
-	_port = 5555;
+	if (port < 1024 || port > 65535)
+		throw std::runtime_error("Invalid port number");
+	_port = port;
+	if (pwd.empty())
+		throw std::runtime_error("Password cannot be empty");
+	_pwd = pwd;
 	SerSocket();
 	std::cout << "Server started on port: " << _port << std::endl;
 	std::cout << "Waiting for connections..." << std::endl;
@@ -123,6 +128,15 @@ void Server::ServerInit()
 	CloseFds();
 }
 
+void Server::AuthenticateClient(int fd)
+{
+    Client *client = getClientByFd(fd);
+	if (client == NULL)
+		return;
+	std::string msg = "Use PASS <password> to authenticate\n";
+	send(fd, msg.c_str(), msg.length(), 0);
+}
+
 void Server::AcceptClient()
 {
 	Client new_client;
@@ -144,6 +158,7 @@ void Server::AcceptClient()
 	new_client.SetIp(inet_ntoa(client_addr.sin_addr)); // convert ip to string
 	_clients.push_back(new_client);
 	std::cout << "New connection from: " << new_fd << std::endl;
+	AuthenticateClient(new_fd);
 }
 
 void Server::ReceiveNewData(int fd)
@@ -163,4 +178,45 @@ void Server::ReceiveNewData(int fd)
 		buffer[bytes_read] = '\0';
 		std::cout << "Received data from: " << fd << "Data :" << buffer <<std::endl;
 	}
+	if (getClientByFd(fd)->GetAuth() == false)
+	{
+		if (strncmp(buffer, "PASS ", 5) == 0)
+		{
+			std::string pwd = buffer + 5;
+			if (pwd[pwd.length() - 1] == '\n')
+				pwd = pwd.substr(0, pwd.length() - 1);
+			if (pwd == _pwd)
+			{
+				getClientByFd(fd)->SetAuth(true);
+				std::string msg = "Authenticated\n";
+				send(fd, msg.c_str(), msg.length(), 0);
+				std::cout << "Client authenticated: " << fd << std::endl;
+			}
+			else
+			{
+				std::string msg = "Authentication failed\n";
+				send(fd, msg.c_str(), msg.length(), 0);
+			}
+		}
+		else
+		{
+			std::string msg = "Use PASS <password> to authenticate\n";
+			send(fd, msg.c_str(), msg.length(), 0);
+		}
+	}
+	else
+	{
+		std::string msg = "Unknown command\n";
+		send(fd, msg.c_str(), msg.length(), 0);
+	}
+}
+
+Client *Server::getClientByFd(int fd)
+{
+	for (size_t i = 0; i < _clients.size(); i++)
+	{
+		if (_clients[i].GetFd() == fd)
+			return &_clients[i];
+	}
+	return NULL;
 }
