@@ -15,5 +15,8 @@ class Client
 		void SetIp(std::string ip);
 		bool GetAuth();
 		void SetAuth(bool auth);
+		void SendMsg(const std::string &msg);
+		~Client();
+
 };
 #endif

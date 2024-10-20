@@ -2,6 +2,7 @@
 #define SERVER_HPP
 #include <iostream>
 #include <vector> //-> for vector
+#include <map> //-> for map
 #include <sys/socket.h> //-> for socket()
 #include <sys/types.h> //-> for socket()
 #include <netinet/in.h> //-> for sockaddr_in
@@ -23,6 +24,8 @@ class Server
 		static bool _signal;
 		std::vector<Client> _clients;
 		std::vector<struct pollfd> _pollfds;
+		std::map<std::string, std::vector<Client*> > _channels;
+		std::map<std::string, std::vector<std::string> > _channelMessages;
 	public :
 		Server();
 		void ServerInit(int port, std::string pwd);
@@ -36,6 +39,14 @@ class Server
 		void SetPwd(std::string pwd);
 		Client *getClientByFd(int fd);
 		void AuthenticateClient(int fd);
+		void CreateChannel(const std::string &channel, Client *client);
+		void JoinChannel(const std::string &channel, Client *client);
+		void LeaveChannel(const std::string &channel, Client *client);
+		void SendMessageToChannel(const std::string &channel, const std::string &msg, Client *client);
+		void AddMessageToChannel(const std::string &channel, const std::string &msg);
+		std::vector<std::string> GetMessagesFromChannel(const std::string &channel); //todo
+		std::vector<Client*> GetClientsFromChannel(const std::string &channel); //todo
+		void SendPrivateMessage(const std::string &nick, const std::string &msg, Client *client); //todo
 		~Server();
 };
 #endif

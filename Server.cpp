@@ -206,8 +206,32 @@ void Server::ReceiveNewData(int fd)
 	}
 	else
 	{
-		std::string msg = "Unknown command\n";
-		send(fd, msg.c_str(), msg.length(), 0);
+		if (strncmp(buffer, "JOIN ", 5) == 0)
+		{
+			std::string channel = buffer + 5;
+			if (channel[channel.length() - 1] == '\n')
+				channel = channel.substr(0, channel.length() - 1);
+			JoinChannel(channel, getClientByFd(fd));
+		}
+		else if (strncmp(buffer, "LEAVE ", 6) == 0)
+		{
+			std::string channel = buffer + 6;
+			if (channel[channel.length() - 1] == '\n')
+				channel = channel.substr(0, channel.length() - 1);
+			LeaveChannel(channel, getClientByFd(fd));
+		}
+		else if (strncmp(buffer, "CREATE ", 7) == 0)
+		{
+			std::string channel = buffer + 7;
+			if (channel[channel.length() - 1] == '\n')
+				channel = channel.substr(0, channel.length() - 1);
+			CreateChannel(channel, getClientByFd(fd));
+		}
+		else
+		{
+			std::string msg = "Unknown command\n";
+			send(fd, msg.c_str(), msg.length(), 0);
+		}
 	}
 }
 
@@ -219,4 +243,96 @@ Client *Server::getClientByFd(int fd)
 			return &_clients[i];
 	}
 	return NULL;
+}
+
+void Server::CreateChannel(const std::string &channel_name, Client *client)
+{
+    if (client == NULL)
+    {
+        std::string msg = "Client is null\n";
+        send(client->GetFd(), msg.c_str(), msg.length(), 0);
+        return;
+    }
+    if (_channels.find(channel_name) == _channels.end())
+    {
+        _channels[channel_name] = std::vector<Client*>();
+        _channels[channel_name].push_back(client);
+        std::string msg = "Channel " + channel_name + " created\n";
+        send(client->GetFd(), msg.c_str(), msg.length(), 0);
+    }
+    else
+    {
+        std::string msg = "Channel already exists\n";
+        send(client->GetFd(), msg.c_str(), msg.length(), 0);
+    }
+}
+
+void Server::JoinChannel(const std::string &channel_name, Client *client)
+{
+    if (_channels.find(channel_name) != _channels.end())
+    {
+        _channels[channel_name].push_back(client);
+        std::string msg = "Client joined channel " + channel_name + "\n";
+        send(client->GetFd(), msg.c_str(), msg.length(), 0);
+    }
+    else
+    {
+        std::string msg = "Channel does not exist\n";
+        send(client->GetFd(), msg.c_str(), msg.length(), 0);
+    }
+}
+
+void Server::LeaveChannel(const std::string &channel_name, Client *client)
+{
+    if (_channels.find(channel_name) != _channels.end())
+    {
+        for (size_t i = 0; i < _channels[channel_name].size(); i++)
+        {
+            if (_channels[channel_name][i] == client)
+            {
+                _channels[channel_name].erase(_channels[channel_name].begin() + i);
+                std::string msg = "Client left channel " + channel_name + "\n";
+                send(client->GetFd(), msg.c_str(), msg.length(), 0);
+                break;
+            }
+        }
+    }
+    else
+    {
+        std::string msg = "Channel does not exist\n";
+        send(client->GetFd(), msg.c_str(), msg.length(), 0);
+    }
+}
+
+void Server::SendMessageToChannel(const std::string &channelName, const std::string &msg, Client *client)
+{
+	std::map<std::string, std::vector<Client*> >::iterator it = _channels.find(channelName);
+	if (it != _channels.end())
+	{
+		std::vector<Client*>::iterator clientIt;
+		for (clientIt = it->second.begin(); clientIt != it->second.end(); clientIt++)
+		{
+			if (*clientIt != client)
+			{
+				(*clientIt)->SendMsg(msg);
+			}
+		}
+	}
+}
+
+void Server::AddMessageToChannel(const std::string &channel, const std::string &msg) {
+    if (_channels.find(channel) != _channels.end()) {
+        _channelMessages[channel].push_back(msg);
+    } else {
+        std::cerr << "Channel does not exist" << std::endl;
+    }
+}
+
+std::vector<std::string> Server::GetMessagesFromChannel(const std::string &channel) {
+    if (_channels.find(channel) != _channels.end()) {
+        return _channelMessages[channel];
+    } else {
+        std::cerr << "Channel does not exist" << std::endl;
+        return std::vector<std::string>();
+    }
 }
