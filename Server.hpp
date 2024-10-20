@@ -48,6 +48,9 @@ class Server
 		std::vector<std::string> GetMessagesFromChannel(const std::string &channel); //todo
 		std::vector<Client*> GetClientsFromChannel(const std::string &channel); //todo
 		void SendPrivateMessage(const std::string &nick, const std::string &msg, Client *client); //todo
+		void ProcedeMessage(const std::string &msg, Client *client);
+		void ProcedeCommand(const std::string &msg, Client *client);
+		void ProcedeChannelMessage(const std::string &msg, Client *client);
 		~Server();
 };
 #endif
