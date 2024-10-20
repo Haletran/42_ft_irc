@@ -128,13 +128,77 @@ void Server::ServerInit(int port, std::string pwd)
 	CloseFds();
 }
 
-void Server::AuthenticateClient(int fd)
+std::string trimNewline(const std::string &str) {
+    size_t end = str.find_last_not_of("\r\n");
+    return (end == std::string::npos) ? "" : str.substr(0, end + 1);
+}
+
+std::vector<std::string> splitString(const std::string &str) {
+    std::istringstream stream(str);
+    std::string word;
+    std::vector<std::string> result;
+    while (stream >> word) {
+        result.push_back(word);
+    }
+    return result;
+}
+
+void Server::AuthenticateClient(int fd, std::string buffer)
 {
     Client *client = getClientByFd(fd);
 	if (client == NULL)
 		return;
-	std::string msg = "Use PASS <password> to authenticate\n";
-	send(fd, msg.c_str(), msg.length(), 0);
+	std::istringstream stream(buffer);
+	std::string line;
+	while (std::getline(stream, line))
+	{
+		if (line.find("PASS ") == 0)
+		{
+			std::string pwd = line.substr(5);
+			pwd = trimNewline(pwd);
+			if (pwd == _pwd)
+			{
+				client->SetAuth(true);
+				std::string msg = "Authenticated\n";
+				send(fd, msg.c_str(), msg.length(), 0);
+				std::cout << "Client authenticated: " << fd << std::endl;
+			}
+			else
+			{
+				std::string msg = "Authentication failed\n";
+				send(fd, msg.c_str(), msg.length(), 0);
+				ClearClients(fd);
+				close(fd);
+			}
+		}
+		else if (line.find("NICK ") == 0)
+		{
+			std::string nick = line.substr(5);
+			nick = trimNewline(nick);
+			client->SetNick(nick);
+			std::string msg = "Nick set to " + nick + "\n";
+			send(fd, msg.c_str(), msg.length(), 0);
+		}
+		else if (line.find("USER ") == 0) 
+		{
+            std::vector<std::string> parts = splitString(line);
+            if (parts.size() >= 2) 
+			{
+                std::string username = parts[1];
+                username = trimNewline(username);
+                client->SetUsername(username);
+                std::string msg = "Username set to " + username + "\n";
+                send(fd, msg.c_str(), msg.length(), 0);
+			}
+		}
+		else if (line == "WHOAMI")
+		{
+			std::string msg = "Nick: " + client->GetNick() + "\n";
+			send(fd, msg.c_str(), msg.length(), 0);
+			msg = "Username: " + client->GetUsername() + "\n";
+			send(fd, msg.c_str(), msg.length(), 0);
+		}
+	}
 }
 
 void Server::AcceptClient()
@@ -158,7 +222,7 @@ void Server::AcceptClient()
 	new_client.SetIp(inet_ntoa(client_addr.sin_addr)); // convert ip to string
 	_clients.push_back(new_client);
 	std::cout << "New connection from: " << new_fd << std::endl;
-	AuthenticateClient(new_fd);
+	
 }
 
 void Server::ReceiveNewData(int fd)
@@ -176,62 +240,23 @@ void Server::ReceiveNewData(int fd)
 	else
 	{
 		buffer[bytes_read] = '\0';
-		std::cout << "Received data from: " << fd << "Data :" << buffer <<std::endl;
+		std::cout << "Received data from " << fd << " : " << buffer <<std::endl;
 	}
 	if (getClientByFd(fd)->GetAuth() == false)
+		AuthenticateClient(fd, buffer);
+	if (strncmp(buffer, "JOIN ", 5) == 0)
 	{
-		if (strncmp(buffer, "PASS ", 5) == 0)
-		{
-			std::string pwd = buffer + 5;
-			if (pwd[pwd.length() - 1] == '\n')
-				pwd = pwd.substr(0, pwd.length() - 1);
-			if (pwd == _pwd)
-			{
-				getClientByFd(fd)->SetAuth(true);
-				std::string msg = "Authenticated\n";
-				send(fd, msg.c_str(), msg.length(), 0);
-				std::cout << "Client authenticated: " << fd << std::endl;
-			}
-			else
-			{
-				std::string msg = "Authentication failed\n";
-				send(fd, msg.c_str(), msg.length(), 0);
-			}
-		}
-		else
-		{
-			std::string msg = "Use PASS <password> to authenticate\n";
-			send(fd, msg.c_str(), msg.length(), 0);
-		}
+		std::string channel = buffer + 5;
+		if (channel[channel.length() - 1] == '\n')
+			channel = channel.substr(0, channel.length() - 1);
+		JoinChannel(channel, getClientByFd(fd));
 	}
-	else
+	else if (strncmp(buffer, "LEAVE ", 6) == 0)
 	{
-		if (strncmp(buffer, "JOIN ", 5) == 0)
-		{
-			std::string channel = buffer + 5;
-			if (channel[channel.length() - 1] == '\n')
-				channel = channel.substr(0, channel.length() - 1);
-			JoinChannel(channel, getClientByFd(fd));
-		}
-		else if (strncmp(buffer, "LEAVE ", 6) == 0)
-		{
-			std::string channel = buffer + 6;
-			if (channel[channel.length() - 1] == '\n')
-				channel = channel.substr(0, channel.length() - 1);
-			LeaveChannel(channel, getClientByFd(fd));
-		}
-		else if (strncmp(buffer, "CREATE ", 7) == 0)
-		{
-			std::string channel = buffer + 7;
-			if (channel[channel.length() - 1] == '\n')
-				channel = channel.substr(0, channel.length() - 1);
-			CreateChannel(channel, getClientByFd(fd));
-		}
-		else
-		{
-			std::string msg = "Unknown command\n";
-			send(fd, msg.c_str(), msg.length(), 0);
-		}
+		std::string channel = buffer + 6;
+		if (channel[channel.length() - 1] == '\n')
+			channel = channel.substr(0, channel.length() - 1);
+		LeaveChannel(channel, getClientByFd(fd));
 	}
 }
 
@@ -245,30 +270,11 @@ Client *Server::getClientByFd(int fd)
 	return NULL;
 }
 
-void Server::CreateChannel(const std::string &channel_name, Client *client)
-{
-    if (client == NULL)
-    {
-        std::string msg = "Client is null\n";
-        send(client->GetFd(), msg.c_str(), msg.length(), 0);
-        return;
-    }
-    if (_channels.find(channel_name) == _channels.end())
-    {
-        _channels[channel_name] = std::vector<Client*>();
-        _channels[channel_name].push_back(client);
-        std::string msg = "Channel " + channel_name + " created\n";
-        send(client->GetFd(), msg.c_str(), msg.length(), 0);
-    }
-    else
-    {
-        std::string msg = "Channel already exists\n";
-        send(client->GetFd(), msg.c_str(), msg.length(), 0);
-    }
-}
-
 void Server::JoinChannel(const std::string &channel_name, Client *client)
 {
+    std::string join_msg = ":" + client->GetUsername() + " JOIN " + channel_name + "\r\n";
+    send(client->GetFd(), join_msg.c_str(), join_msg.length(), 0);
+
     if (_channels.find(channel_name) != _channels.end())
     {
         _channels[channel_name].push_back(client);
@@ -277,9 +283,31 @@ void Server::JoinChannel(const std::string &channel_name, Client *client)
     }
     else
     {
-        std::string msg = "Channel does not exist\n";
+        _channels[channel_name] = std::vector<Client*>();
+        _channels[channel_name].push_back(client);
+        std::string msg = "Channel " + channel_name + " created\n";
+        send(client->GetFd(), msg.c_str(), msg.length(), 0);
+        msg = "You joined channel " + channel_name + "\n";
         send(client->GetFd(), msg.c_str(), msg.length(), 0);
     }
+
+    // Send the topic of the channel (RPL_TOPIC)
+    std::string topic_msg = ":server 332 " + client->GetUsername() + " " + channel_name + " :No topic is set\r\n";
+    send(client->GetFd(), topic_msg.c_str(), topic_msg.length(), 0);
+
+    // Send the names of the users in the channel (RPL_NAMREPLY)
+    std::string names_msg = ":server 353 " + client->GetUsername() + " = " + channel_name + " :";
+    std::vector<Client*>::iterator it;
+    for (it = _channels[channel_name].begin(); it != _channels[channel_name].end(); ++it)
+    {
+        names_msg += (*it)->GetUsername() + " ";
+    }
+    names_msg += "\r\n";
+    send(client->GetFd(), names_msg.c_str(), names_msg.length(), 0);
+
+    // End of names list (RPL_ENDOFNAMES)
+    std::string end_names_msg = ":server 366 " + client->GetUsername() + " " + channel_name + " :End of /NAMES list\r\n";
+    send(client->GetFd(), end_names_msg.c_str(), end_names_msg.length(), 0);
 }
 
 void Server::LeaveChannel(const std::string &channel_name, Client *client)

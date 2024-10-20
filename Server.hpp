@@ -1,6 +1,7 @@
 #ifndef SERVER_HPP
 #define SERVER_HPP
 #include <iostream>
+#include <sstream>
 #include <vector> //-> for vector
 #include <map> //-> for map
 #include <sys/socket.h> //-> for socket()
@@ -38,7 +39,7 @@ class Server
 		std::string GetPwd();
 		void SetPwd(std::string pwd);
 		Client *getClientByFd(int fd);
-		void AuthenticateClient(int fd);
+		void AuthenticateClient(int fd, std::string buffer);
 		void CreateChannel(const std::string &channel, Client *client);
 		void JoinChannel(const std::string &channel, Client *client);
 		void LeaveChannel(const std::string &channel, Client *client);

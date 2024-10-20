@@ -42,6 +42,27 @@ void Client::SendMsg(const std::string &msg)
 		std::cerr << "Client fd is -1" << std::endl;
 }
 
+void Client::SetNick(std::string nick)
+{
+	_nick = nick;
+}
+
+std::string Client::GetNick()
+{
+	return _nick;
+}
+
+void Client::SetUsername(std::string username)
+{
+	_username = username;
+}
+
+std::string Client::GetUsername()
+{
+	return _username;
+}
+
+
 Client::~Client()
 {
 }
