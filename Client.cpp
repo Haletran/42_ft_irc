@@ -33,13 +33,25 @@ void Client::SetAuth(bool auth)
 
 void Client::SendMsg(const std::string &msg)
 {
-	if (_fd != -1)
-	{
-		if (send(_fd, msg.c_str(), msg.length(), 0) == -1)
-			std::cerr << "Error sending message" << std::endl;
-	}
-	else
-		std::cerr << "Client fd is -1" << std::endl;
+    if (_fd == -1)
+    {
+        std::cerr << "Client fd is -1" << std::endl;
+        return;
+    }
+
+    ssize_t bytes_sent = send(_fd, msg.c_str(), msg.length(), 0);
+    if (bytes_sent == -1)
+    {
+        std::cerr << "Error sending message: " << strerror(errno) << " (errno: " << errno << ")" << std::endl;
+    }
+    else if (bytes_sent < static_cast<ssize_t>(msg.length()))
+    {
+        std::cerr << "Partial message sent: " << bytes_sent << " out of " << msg.length() << " bytes" << std::endl;
+    }
+    else
+    {
+        std::cout << "Message sent successfully: " << msg << std::endl;
+    }
 }
 
 void Client::SetNick(std::string nick)

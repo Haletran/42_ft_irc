@@ -14,6 +14,7 @@
 #include <csignal> //-> for signal()
 #include <cstring>
 #include <cstdlib>
+#include <cerrno>
 #include "Client.hpp"
 class Client;
 class Server
