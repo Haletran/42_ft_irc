@@ -1,42 +1,32 @@
-# **************************************************************************** #
-#                                                                              #
-#                                                         :::      ::::::::    #
-#    Makefile                                           :+:      :+:    :+:    #
-#                                                     +:+ +:+         +:+      #
-#    By: baptiste <baptiste@student.42.fr>          +#+  +:+       +#+         #
-#                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2024/04/18 13:05:32 by bapasqui          #+#    #+#              #
-#    Updated: 2024/05/11 00:34:49 by baptiste         ###   ########.fr        #
-#                                                                              #
-# **************************************************************************** #
+CXX = c++
 
-ifndef VERBOSE
-MAKEFLAGS += --no-print-directory --silent
-endif
+CFLAGS = -Wall -Wextra -Werror -g -std=c++98
 
-NAME := ft_irc
-CXX := c++
-CFLAGS := -Wextra -Wall -Werror -g -std=c++98
-SRCS := srcs/main.cpp \
-		srcs/Server.cpp \
-		srcs/Client.cpp
-HEADERS := includes/Server.hpp includes/Client.hpp includes/Common.hpp
-OBJS := $(SRCS:.cpp=.o)
+SRC = srcs/main.cpp \
+	srcs/Server.cpp \
+	srcs/Client.cpp \
+	srcs/Message.cpp
 
-all: $(NAME)
+OBJ_DIR = obj
+OBJ = $(addprefix $(OBJ_DIR)/, $(SRC:srcs/%.cpp=%.o))
 
-$(NAME): $(OBJS)
-	$(CXX) $(CFLAGS) -o $(NAME) $(OBJS)
-	echo "Compiling\033[1m\033[32m" $@ "\033[0m"
-	echo "\033[42mSuccessfully compiled :)\033[0m"
+TARGET = ircserv
 
-%.o: %.cpp
-	$(CXX) $(CFLAGS) -c $< -o $@
+all: $(TARGET)
+
+$(TARGET): $(OBJ)
+	$(CXX) $(CFLAGS) -o $@ $^
+
+$(OBJ_DIR)/%.o: srcs/%.cpp
+	@mkdir -p $(OBJ_DIR)
+	$(CXX) $(CFLAGS) -c -o $@ $<
 
 clean:
-	rm -rf $(OBJS)
+	rm -f $(OBJ)
 
 fclean: clean
-	rm -f $(NAME)
+	rm -f $(TARGET)
 
 re: fclean all
+
+.PHONY: all clean fclean re

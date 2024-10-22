@@ -1,60 +1,80 @@
-#include "../includes/Client.hpp"
+#include "../includes/Global.hpp"
 
-Client::Client(int state, int client_socket) : _state(state), _client_socket(client_socket)
+Client::Client()
 {
+	_fd = -1;
+	_auth = false;
 }
 
-Client::~Client() {}
-
-
-Client::Client(const Client& cpy)
+int Client::GetFd()
 {
-    *this = cpy;
+	return _fd;
 }
 
-Client &Client::operator=(const Client &src)
+void Client::SetFd(int fd)
 {
-    if (this != &src)
+	_fd = fd;
+}
+
+void Client::SetIp(std::string ip)
+{
+	_ip = ip;
+}
+
+bool Client::GetAuth()
+{
+	return _auth;
+}
+
+void Client::SetAuth(bool auth)
+{
+	_auth = auth;
+}
+
+void Client::SendMsg(const std::string &msg)
+{
+    if (_fd == -1)
     {
-        this->_state = src._state;
-        this->_username = src._username;
-        this->_nickname = src._nickname;
+        std::cerr << "Client fd is -1" << std::endl;
+        return;
     }
-    return (*this);
+
+    ssize_t bytes_sent = send(_fd, msg.c_str(), msg.length(), 0);
+    if (bytes_sent == -1)
+    {
+        std::cerr << "Error sending message: " << strerror(errno) << " (errno: " << errno << ")" << std::endl;
+    }
+    else if (bytes_sent < static_cast<ssize_t>(msg.length()))
+    {
+        std::cerr << "Partial message sent: " << bytes_sent << " out of " << msg.length() << " bytes" << std::endl;
+    }
+    else
+    {
+        std::cout << "Message sent successfully: " << msg << std::endl;
+    }
 }
 
-void Client::set_username(std::string username)
+void Client::SetNick(std::string nick)
 {
-    this->_username = username;
+	_nick = nick;
 }
 
-void Client::set_state(int state)
+std::string Client::GetNick()
 {
-    this->_state = state;
+	return _nick;
 }
 
-void Client::set_nickname(std::string nickname)
+void Client::SetUsername(std::string username)
 {
-    this->_nickname = nickname;
+	_username = username;
 }
 
-int Client::get_state()
+std::string Client::GetUsername()
 {
-    return (_state);
-}
-
-std::string Client::get_username()
-{
-    return (_username);
-}
-
-std::string Client::get_nickname()
-{
-    return (_nickname);
+	return _username;
 }
 
 
-int Client::get_socket()
+Client::~Client()
 {
-    return (_client_socket);
 }
