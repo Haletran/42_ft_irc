@@ -16,6 +16,7 @@
 #include <cstdlib>
 #include <cerrno>
 #include "Client.hpp"
+std::string trimNewline(const std::string &str);
 class Client;
 class Server
 {
@@ -52,6 +53,7 @@ class Server
 		void ProcedeMessage(const std::string &msg, Client *client);
 		void ProcedeCommand(const std::string &msg, Client *client);
 		void ProcedeChannelMessage(const std::string &msg, Client *client);
+		void KickFromChannel(const std::string &nick, const std::string &channel, Client *client);
 		~Server();
 };
 #endif

@@ -54,25 +54,6 @@ void Server::CloseFds()
 
 void Server::SerSocket()
 {
-	/* struct sockaddr_in {
-	sa_family_t     sin_family;
-	in_port_t       sin_port;
-	struct  in_addr sin_addr;
-	char            sin_zero[8];
-	}; */
-	
-	
-	/* struct in_addr {
- 	in_addr_t s_addr;
-	}; */
-
-	/* struct pollfd {
-	int     fd; //-> file descriptor
-	short   events;//-> requested events
-	short   revents;//-> returned events
-	}; */
-
-
 	struct sockaddr_in server_addr;
 	struct pollfd newpoll;
 	server_addr.sin_family = AF_INET; // IPv4
@@ -126,11 +107,6 @@ void Server::ServerInit(int port, std::string pwd)
 		}
 	}
 	CloseFds();
-}
-
-std::string trimNewline(const std::string &str) {
-    size_t end = str.find_last_not_of("\r\n ");
-    return (end == std::string::npos) ? "" : str.substr(0, end + 1);
 }
 
 std::vector<std::string> splitString(const std::string &str) {
@@ -218,71 +194,7 @@ void Server::AcceptClient()
 	
 }
 
-void Server::ProcedeCommand(const std::string &msg, Client *client)
-{
-	if (msg.find("JOIN") != std::string::npos)
-	{
-		std::string channel = msg.substr(5);
-		if (channel[channel.length() - 1] == '\n')
-			channel = channel.substr(0, channel.length() - 1);
-		JoinChannel(channel, client);
-	}
-	else if (msg.find("LEAVE") != std::string::npos)
-	{
-		std::string channel = msg.substr(6);
-		if (channel[channel.length() - 1] == '\n')
-			channel = channel.substr(0, channel.length() - 1);
-		LeaveChannel(channel, client);
-	}
-	else if (msg.find("WHOAMI") != std::string::npos)
-	{
-		std::string msg = "Nick: " + client->GetNick() + "\n";
-		client->SendMsg(msg);
-		msg = "Username: " + client->GetUsername() + "\n";
-		client->SendMsg(msg);
-	}
-	else
-	{
-		std::string msg = "Unknown command\n";
-		client->SendMsg(msg);
-	}
-}
 
-void Server::ProcedeChannelMessage(const std::string &msg, Client *client)
-{
-    std::string prefix = "PRIVMSG ";
-	if (msg.find(prefix) != 0)
-		return;
-	std::istringstream stream(msg.substr(prefix.length()));
-	std::string channel;
-	std::string message;
-	std::string separator;
-
-	stream >> channel >> separator;
-	std::getline(stream, message);
-	if (!message.empty() && message[0] == ' ')
-		message = message.substr(1);
-	channel = trimNewline(channel);
-	message = trimNewline(message);
-	std::string formatted_msg = ":" + client->GetUsername() + " PRIVMSG " + channel + " " + message + "\r\n";
-    SendMessageToChannel(channel, formatted_msg, client);
-    //AddMessageToChannel(channel, formatted_msg);
-}
-
-void Server::ProcedeMessage(const std::string &msg, Client *client)
-{
-	std::string channel;
-	std::string message;
-	std::istringstream stream(msg);
-	std::string line;
-	while (std::getline(stream, line))
-	{
-		if (line.find("PRIVMSG ") == std::string::npos)
-			ProcedeCommand(line, client);
-		else
-			ProcedeChannelMessage(line, client);
-	}
-}
 
 void Server::ReceiveNewData(int fd)
 {
@@ -376,38 +288,6 @@ void Server::LeaveChannel(const std::string &channel_name, Client *client)
     }
 }
 
-void Server::SendMessageToChannel(const std::string &channelName, const std::string &msg, Client *client)
-{
-    std::string trimmedChannelName = trimNewline(channelName);
-
-    // Cherche le channel dans la liste des channels existants
-    std::map<std::string, std::vector<Client*> >::iterator it = _channels.find(trimmedChannelName);
-    if (it != _channels.end())
-    {
-        // Formate le message sans l'IP de l'expéditeur
-        std::string formatted_msg = ":" + client->GetUsername() + "!" + client->GetNick() + " PRIVMSG " + trimmedChannelName + " :" + msg + "\r\n";
-
-        // Parcourt tous les clients dans le channel
-        std::vector<Client*>::iterator clientIt;
-        for (clientIt = it->second.begin(); clientIt != it->second.end(); ++clientIt)
-        {
-            // Envoie le message à tous les autres clients sauf celui qui l'a envoyé
-            if (*clientIt != client)
-            {
-                (*clientIt)->SendMsg(formatted_msg);  // Envoie le message formaté au client
-            }
-        }
-    }
-    else 
-    {
-        // Si le channel n'existe pas, envoie un message d'erreur au client expéditeur
-        std::string error_msg = "Channel does not exist\n";
-        client->SendMsg(error_msg);
-    }
-}
-
-
-
 void printallChannel(std::map<std::string, std::vector<Client*> > _channels)
 {
 	std::map<std::string, std::vector<Client*> >::iterator it;
@@ -422,29 +302,8 @@ void printallChannel(std::map<std::string, std::vector<Client*> > _channels)
 	}
 }
 
-void Server::AddMessageToChannel(const std::string &channel, const std::string &msg) {
-    //printallChannel(_channels);
-	std::map<std::string, std::vector<Client*> >::iterator it;
-	
-	if (_channels.find(channel) != _channels.end()) {
-		
-        _channelMessages[channel].push_back(msg);
-    } else {
-        std::cerr << "Channel "<< channel <<" does not exist" << std::endl;
-    }
-	
-}
-
-std::vector<std::string> Server::GetMessagesFromChannel(const std::string &channel) {
-    if (_channels.find(channel) != _channels.end()) {
-        return _channelMessages[channel];
-    } else {
-        std::cerr << "Channel does not exist" << std::endl;
-        return std::vector<std::string>();
-    }
-}
-
-std::vector<Client*> Server::GetClientsFromChannel(const std::string &channel) {
+std::vector<Client*> Server::GetClientsFromChannel(const std::string &channel) 
+{
 	if (_channels.find(channel) != _channels.end()) {
 		return _channels[channel];
 	} else {
