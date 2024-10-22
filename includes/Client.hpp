@@ -1,27 +1,26 @@
 #pragma once
+#include "Global.hpp"
 
-#include <iostream>
+class Client
+{
+	private :
+		int _fd;
+		std::string _ip;
+		bool _auth;
+		std::string _nick;
+		std::string _username;
+	public :
+		Client();
+		int GetFd();
+		void SetFd(int fd);
+		void SetIp(std::string ip);
+		void SetNick(std::string nick);
+		std::string GetNick();
+		void SetUsername(std::string username);
+		std::string GetUsername();
+		bool GetAuth();
+		void SetAuth(bool auth);
+		void SendMsg(const std::string &msg);
+		~Client();
 
-class Client {
-    private:
-        std::string _username;
-        std::string _nickname;
-        int _state;
-        int _client_socket;
-    public:
-        Client(int _state, int client_socket);
-        Client (const Client& cpy);
-        Client &operator=(const Client& src);
-        ~Client();
-
-        // SETTERS
-        void set_username(std::string username);
-        void set_state(int state);
-        void set_nickname(std::string nickname);
-
-        // GETTERS
-        std::string get_username();
-        int get_state();
-        std::string get_nickname();
-        int get_socket();
 };

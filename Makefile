@@ -1,25 +1,25 @@
-CC = c++
+CXX = c++
 
 CFLAGS = -Wall -Wextra -Werror -g -std=c++98
 
-SRC = main.cpp \
-	Server.cpp \
-	Client.cpp \
-	Message.cpp \
+SRC = srcs/main.cpp \
+	srcs/Server.cpp \
+	srcs/Client.cpp \
+	srcs/Message.cpp
 
-OBJ = $(SRC:.cpp=.o)
+OBJ_DIR = obj
+OBJ = $(addprefix $(OBJ_DIR)/, $(SRC:srcs/%.cpp=%.o))
 
-TARGET = irc
-
-.PHONY: all clean fclean re
+TARGET = ircserv
 
 all: $(TARGET)
 
 $(TARGET): $(OBJ)
-	$(CC) $(CFLAGS) -o $@ $^
+	$(CXX) $(CFLAGS) -o $@ $^
 
-%.o: %.cpp
-	$(CC) $(CFLAGS) -c -o $@ $<
+$(OBJ_DIR)/%.o: srcs/%.cpp
+	@mkdir -p $(OBJ_DIR)
+	$(CXX) $(CFLAGS) -c -o $@ $<
 
 clean:
 	rm -f $(OBJ)
@@ -28,3 +28,5 @@ fclean: clean
 	rm -f $(TARGET)
 
 re: fclean all
+
+.PHONY: all clean fclean re

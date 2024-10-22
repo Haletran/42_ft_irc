@@ -1,27 +1,19 @@
 #pragma once
 
-#include <iostream>          // For input/output in C++
-#include <cstring>           // For memset, etc.
-#include <string>            // For std::string
-#include <sys/types.h>       // Basic system data types
-#include <sys/socket.h>      // For socket functions
-#include <netinet/in.h>      // For sockaddr_in, htons, etc.
-#include <arpa/inet.h>       // For inet_addr, inet_ntoa
-#include <netdb.h>           // For gethostbyname, getaddrinfo, freeaddrinfo
-#include <unistd.h>          // For close, etc.
-#include <fcntl.h>           // For fcntl
-#include <poll.h>            // For poll
-#include <csignal>           // For signal and sigaction
-#include <cerrno>            // For error handling
-#include <sys/stat.h>        // For fstat
-#include <sys/types.h>       // For lseek
-#include <stdexcept>
-#include <stdlib.h>
-#include <unistd.h>
-
-
-#define DEFAULT_PORT 6667
-#define MAX_CLIENTS 10
-
-#include "Server.hpp"
+#include <iostream>
+#include <sstream>
+#include <vector> //-> for vector
+#include <map> //-> for map
+#include <sys/socket.h> //-> for socket()
+#include <sys/types.h> //-> for socket()
+#include <netinet/in.h> //-> for sockaddr_in
+#include <fcntl.h> //-> for fcntl()
+#include <unistd.h> //-> for close()
+#include <arpa/inet.h> //-> for inet_ntoa()
+#include <poll.h> //-> for poll()
+#include <csignal> //-> for signal()
+#include <cstring>
+#include <cstdlib>
+#include <cerrno>
 #include "Client.hpp"
+#include "Server.hpp"

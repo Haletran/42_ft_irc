@@ -1,28 +1,44 @@
 #pragma once
 
-#include "Client.hpp"
 #include "Global.hpp"
-#include <iostream>
-#include <vector>
-#include <list>
-
-class Server {
-    private:
-        int _port;
-        int _server_fd;
-        std::string _password;
-        std::list<Client> listUser;
-        sockaddr_in _serverAddress;
-        Server(const Server& cpy);
-        Server operator=(const Server&src);
-    public:
-        Server(int port, std::string password,int server_fd);
-        ~Server();
-
-        int get_port();
-        void login(std::vector<char> msgBuffer, int client_socket);
-        bool command_parsing();
-        Client get_client();
-        int get_fd();
-        sockaddr_in get_address();
+std::string trimNewline(const std::string &str);
+class Client;
+class Server
+{
+	private :
+		int _port;
+		std::string _pwd;
+		int _server_socket;
+		static bool _signal;
+		std::vector<Client> _clients;
+		std::vector<struct pollfd> _pollfds;
+		std::map<std::string, std::vector<Client*> > _channels;
+		std::map<std::string, std::vector<std::string> > _channelMessages;
+	public :
+		Server();
+		void ServerInit(int port, std::string pwd);
+		void SerSocket();
+		void AcceptClient();
+		void ReceiveNewData(int fd);
+		static void SignalHandler(int signum);
+		void CloseFds();
+		void ClearClients(int fd);
+		std::string GetPwd();
+		void SetPwd(std::string pwd);
+		Client *getClientByFd(int fd);
+		void AuthenticateClient(int fd, std::string buffer);
+		void CreateChannel(const std::string &channel, Client *client);
+		void JoinChannel(const std::string &channel, Client *client);
+		void LeaveChannel(const std::string &channel, Client *client);
+		void SendMessageToChannel(const std::string &channel, const std::string &msg, Client *client);
+		void AddMessageToChannel(const std::string &channel, const std::string &msg);
+		std::vector<std::string> GetMessagesFromChannel(const std::string &channel); //todo
+		std::vector<Client*> GetClientsFromChannel(const std::string &channel); //todo
+		void SendPrivateMessage(const std::string &nick, const std::string &msg, Client *client); //todo
+		void ProcedeMessage(const std::string &msg, Client *client);
+		void ProcedeCommand(const std::string &msg, Client *client);
+		void ProcedeChannelMessage(const std::string &msg, Client *client);
+		void KickFromChannel(const std::string &nick, const std::string &channel, Client *client);
+		Client *get_ClientByUsername(std::string username);
+		~Server();
 };
