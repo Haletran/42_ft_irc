@@ -1,19 +1,19 @@
 #pragma once
-
 #include "Global.hpp"
+
 std::string trimNewline(const std::string &str);
 class Client;
+class Channel;
 class Server
 {
-	private :
+	protected :
 		int _port;
 		std::string _pwd;
 		int _server_socket;
 		static bool _signal;
 		std::vector<Client> _clients;
 		std::vector<struct pollfd> _pollfds;
-		std::map<std::string, std::vector<Client*> > _channels;
-		std::map<std::string, std::vector<std::string> > _channelMessages;
+		std::map<Channel*, std::vector<Client*> > _channels;
 	public :
 		Server();
 		void ServerInit(int port, std::string pwd);
@@ -30,14 +30,14 @@ class Server
 		void CreateChannel(const std::string &channel, Client *client);
 		void JoinChannel(const std::string &channel, Client *client);
 		void LeaveChannel(const std::string &channel, Client *client);
+		Channel *getChannelByName(const std::string &channel);
 		void SendMessageToChannel(const std::string &channel, const std::string &msg, Client *client);
-		void AddMessageToChannel(const std::string &channel, const std::string &msg);
-		std::vector<std::string> GetMessagesFromChannel(const std::string &channel); //todo
+		//void AddMessageToChannel(const std::string &channel, const std::string &msg);
+		//std::vector<std::string> GetMessagesFromChannel(const std::string &channel); //todo
 		std::vector<Client*> GetClientsFromChannel(const std::string &channel); //todo
 		void SendPrivateMessage(const std::string &nick, const std::string &msg, Client *client); //todo
 		void ProcedeMessage(const std::string &msg, Client *client);
 		void ProcedeCommand(const std::string &msg, Client *client);
-		void ProcedeChannelMessage(const std::string &msg, Client *client);
 		void KickFromChannel(const std::string &nick, const std::string &channel, Client *client);
 		Client *get_ClientByUsername(std::string username);
 		~Server();

@@ -231,50 +231,48 @@ Client *Server::getClientByFd(int fd)
 
 void Server::JoinChannel(const std::string &channel_name, Client *client)
 {
-	if (!client->GetAuth() || client->GetNick().empty() || client->GetUsername().empty())
-	{
-		std::cerr << "Client is not fully authenticated: " << client->GetFd() << std::endl;
-		return;
-	}
-
-	std::string trimmed_channel_name = trimNewline(channel_name);
-
-	std::string join_msg = ":" + client->GetUsername() + " JOIN " + trimmed_channel_name + "\r\n";
-	client->SendMsg(join_msg);
-
-	if (_channels.find(trimmed_channel_name) != _channels.end())
-	{
-		_channels[trimmed_channel_name].push_back(client);
-		std::string msg = ":" + client->GetUsername() + " has joined the channel " + trimmed_channel_name + "\r\n";
-		std::vector<Client*> clientsInChannel = GetClientsFromChannel(trimmed_channel_name);
-		for (std::vector<Client*>::iterator clientIt = clientsInChannel.begin(); clientIt != clientsInChannel.end(); ++clientIt)
-		{
-			if (*clientIt != client)
-			{
-				(*clientIt)->SendMsg(msg);
-			}
-		}
-	}
-	else
-	{
-		_channels[trimmed_channel_name] = std::vector<Client*>();
-		_channels[trimmed_channel_name].push_back(client);
-		std::string msg = "Channel " + trimmed_channel_name + " created\r\n";
-		client->SendMsg(msg);
-		msg = "You joined channel " + trimmed_channel_name + "\r\n";
-		client->SendMsg(msg);
-	}
+    if (!client->GetAuth() || client->GetNick().empty() || client->GetUsername().empty())
+    {
+        std::cerr << "Client is not fully authenticated: " << client->GetFd() << std::endl;
+        return;
+    }
+    std::string trimmed_channel_name = trimNewline(channel_name);
+    std::string join_msg = ":" + client->GetUsername() + " JOIN " + trimmed_channel_name + "\r\n";
+    client->SendMsg(join_msg);
+    Channel* channel = getChannelByName(trimmed_channel_name);
+    if (channel != NULL)
+    {
+        _channels[channel].push_back(client);
+        std::string msg = ":" + client->GetUsername() + " has joined the channel " + trimmed_channel_name + "\r\n";
+        std::vector<Client*> clientsInChannel = GetClientsFromChannel(trimmed_channel_name);
+        for (std::vector<Client*>::iterator clientIt = clientsInChannel.begin(); clientIt != clientsInChannel.end(); ++clientIt)
+        {
+            if (*clientIt != client)
+                (*clientIt)->SendMsg(msg);
+        }
+    }
+    else
+    {
+        Channel* newChannel = new Channel(trimmed_channel_name);
+        _channels[newChannel].push_back(client);
+        std::string msg = "Channel " + trimmed_channel_name + " created\r\n";
+        client->SendMsg(msg);
+        msg = "You joined channel " + trimmed_channel_name + "\r\n";
+        client->SendMsg(msg);
+    }
 }
 
 void Server::LeaveChannel(const std::string &channel_name, Client *client)
 {
-    if (_channels.find(channel_name) != _channels.end())
+    Channel* channel = getChannelByName(channel_name);
+    if (channel != NULL)
     {
-        for (size_t i = 0; i < _channels[channel_name].size(); i++)
+        std::vector<Client*>& clients = _channels[channel];
+        for (std::vector<Client*>::iterator it = clients.begin(); it != clients.end(); ++it)
         {
-            if (_channels[channel_name][i] == client)
+            if (*it == client)
             {
-                _channels[channel_name].erase(_channels[channel_name].begin() + i);
+                clients.erase(it);
                 std::string msg = "Client left channel " + channel_name + "\n";
                 send(client->GetFd(), msg.c_str(), msg.length(), 0);
                 break;
@@ -286,6 +284,16 @@ void Server::LeaveChannel(const std::string &channel_name, Client *client)
         std::string msg = "Channel does not exist\n";
         send(client->GetFd(), msg.c_str(), msg.length(), 0);
     }
+}
+
+Channel* Server::getChannelByName(const std::string &channel) {
+    std::map<Channel*, std::vector<Client*> >::iterator it;
+    for (it = _channels.begin(); it != _channels.end(); ++it) {
+        if (it->first->GetChannelName() == channel) {
+            return it->first;
+        }
+    }
+    return NULL;
 }
 
 void printallChannel(std::map<std::string, std::vector<Client*> > _channels)
@@ -304,12 +312,13 @@ void printallChannel(std::map<std::string, std::vector<Client*> > _channels)
 
 std::vector<Client*> Server::GetClientsFromChannel(const std::string &channel)
 {
-	if (_channels.find(channel) != _channels.end()) {
-		return _channels[channel];
-	} else {
-		std::cerr << "Channel does not exist" << std::endl;
-		return std::vector<Client*>();
-	}
+    Channel* channelPtr = getChannelByName(channel);
+    if (channelPtr != NULL) {
+        return _channels[channelPtr];
+    } else {
+        std::cerr << "Channel does not exist" << std::endl;
+        return std::vector<Client*>();
+    }
 }
 
 Client *Server::get_ClientByUsername(std::string username)

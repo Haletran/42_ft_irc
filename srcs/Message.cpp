@@ -40,32 +40,17 @@ void Server::ProcedeCommand(const std::string &msg, Client *client)
 	{
 		KickFromChannel(channel, parameters, client);
 	}
+	else if (command == "PRIVMSG")
+	{
+		std::string formated_message = ":" + client->GetUsername() + " " + msg;
+		std::string channel = GetChannelName(msg);
+   		SendMessageToChannel(channel, formated_message, client);
+	}
 	else
 	{
 		std::string msg = "Unknown command\n";
 		client->SendMsg(msg);
 	}
-
-/*
-	else if (msg.find("LEAVE") != std::string::npos)
-	{
-		std::string channel = msg.substr(6);
-		if (channel[channel.length() - 1] == '\n')
-			channel = channel.substr(0, channel.length() - 1);
-		LeaveChannel(channel, client);
-	}
-	else if (msg.find("WHOAMI") != std::string::npos)
-	{
-		std::string msg = "Nick: " + client->GetNick() + "\n";
-		client->SendMsg(msg);
-		msg = "Username: " + client->GetUsername() + "\n";
-		client->SendMsg(msg);
-	}
-	else if (msg.find("KICK") != std::string::npos)
-	{
-		KickFromChannel(msg, client);
-	}
-	*/
 }
 
 std::string GetChannelName(const std::string &line) {
@@ -84,15 +69,6 @@ std::string GetChannelName(const std::string &line) {
     return channel;
 }
 
-void Server::ProcedeChannelMessage(const std::string &msg, Client *client)
-{
-	//PRIVMSG dd :slt
-	std::string formated_message = ":" + client->GetUsername() + " " + msg;
-	std::string channel = GetChannelName(msg);
-    SendMessageToChannel(channel, formated_message, client);
-    //AddMessageToChannel(channel, formatted_msg);
-}
-
 void Server::ProcedeMessage(const std::string &msg, Client *client)
 {
 	std::string channel;
@@ -101,10 +77,7 @@ void Server::ProcedeMessage(const std::string &msg, Client *client)
 	std::string line;
 	while (std::getline(stream, line))
 	{
-		if (line.find("PRIVMSG ") == std::string::npos)
-			ProcedeCommand(line, client);
-		else
-			ProcedeChannelMessage(line, client);
+		ProcedeCommand(line, client);
 	}
 }
 
@@ -116,19 +89,19 @@ std::string trimNewline(const std::string &str) {
 void Server::SendMessageToChannel(const std::string &channelName, const std::string &msg, Client *client)
 {
     std::string trimmedChannelName = trimNewline(channelName);
-    std::map<std::string, std::vector<Client*> >::iterator it = _channels.find(trimmedChannelName);
-    if (it != _channels.end())
+    Channel* channel = getChannelByName(trimmedChannelName);
+    if (channel != NULL)
     {
         std::string formatted_msg = ":" + client->GetUsername() + "!" + client->GetNick() + " PRIVMSG " + trimmedChannelName + " :" + msg + "\r\n";
-        std::vector<Client*> clientsInChannel = GetClientsFromChannel(channelName);
-		for (std::vector<Client*>::iterator clientIt = clientsInChannel.begin(); clientIt != clientsInChannel.end(); ++clientIt)
-		{
-			std::cout << "Sending message to client: " << (*clientIt)->GetUsername() << std::endl;
-			if (*clientIt != client)
-			{
-				(*clientIt)->SendMsg(msg);
-			}
-		}
+        std::vector<Client*> clientsInChannel = GetClientsFromChannel(trimmedChannelName);
+        for (std::vector<Client*>::iterator clientIt = clientsInChannel.begin(); clientIt != clientsInChannel.end(); ++clientIt)
+        {
+            std::cout << "Sending message to client: " << (*clientIt)->GetUsername() << std::endl;
+            if (*clientIt != client)
+            {
+                (*clientIt)->SendMsg(formatted_msg);
+            }
+        }
     }
     else
     {
@@ -137,50 +110,54 @@ void Server::SendMessageToChannel(const std::string &channelName, const std::str
     }
 }
 
-void Server::AddMessageToChannel(const std::string &channel, const std::string &msg)
+/* void Server::AddMessageToChannel(const std::string &channel, const std::string &msg)
 {
-	std::map<std::string, std::vector<Client*> >::iterator it;
-
-	if (_channels.find(channel) != _channels.end()) {
-
-        _channelMessages[channel].push_back(msg);
-    } else {
-        std::cerr << "Channel "<< channel <<" does not exist" << std::endl;
+    Channel* channelPtr = getChannelByName(channel);
+    if (channelPtr != NULL)
+    {
+        _channelMessages[channelPtr].push_back(msg);
     }
+    else
+    {
+        std::cerr << "Channel " << channel << " does not exist" << std::endl;
+    }
+} */
 
-}
-
-std::vector<std::string> Server::GetMessagesFromChannel(const std::string &channel)
+/* std::vector<std::string> Server::GetMessagesFromChannel(const std::string &channel)
 {
-    if (_channels.find(channel) != _channels.end()) {
-        return _channelMessages[channel];
-    } else {
+    Channel* channelPtr = getChannelByName(channel);
+    if (channelPtr != NULL)
+    {
+        return _channelMessages[channelPtr];
+    }
+    else
+    {
         std::cerr << "Channel does not exist" << std::endl;
         return std::vector<std::string>();
     }
-}
+} */
 
 void Server::KickFromChannel(const std::string &nick, const std::string &channel, Client *client)
 {
-	std::string trimmed_channel_name = trimNewline(channel);
-	std::map<std::string, std::vector<Client*> >::iterator it = _channels.find(trimmed_channel_name);
-	if (it != _channels.end())
-	{
-		std::vector<Client*> clientsInChannel = GetClientsFromChannel(trimmed_channel_name);
-		for (std::vector<Client*>::iterator clientIt = clientsInChannel.begin(); clientIt != clientsInChannel.end(); ++clientIt)
-		{
-			if ((*clientIt)->GetNick() == nick)
-			{
-				std::string msg = "You have been kicked from channel " + trimmed_channel_name + "\n";
-				(*clientIt)->SendMsg(msg);
-				LeaveChannel(trimmed_channel_name, *clientIt);
-				break;
-			}
-		}
-	}
-	else
-	{
-		std::string msg = "Channel does not exist\n";
-		client->SendMsg(msg);
-	}
+    std::string trimmed_channel_name = trimNewline(channel);
+    Channel* channelPtr = getChannelByName(trimmed_channel_name);
+    if (channelPtr != NULL)
+    {
+        std::vector<Client*> clientsInChannel = GetClientsFromChannel(trimmed_channel_name);
+        for (std::vector<Client*>::iterator clientIt = clientsInChannel.begin(); clientIt != clientsInChannel.end(); ++clientIt)
+        {
+            if ((*clientIt)->GetNick() == nick)
+            {
+                std::string msg = "You have been kicked from channel " + trimmed_channel_name + "\n";
+                (*clientIt)->SendMsg(msg);
+                LeaveChannel(trimmed_channel_name, *clientIt);
+                break;
+            }
+        }
+    }
+    else
+    {
+        std::string msg = "Channel does not exist\n";
+        client->SendMsg(msg);
+    }
 }

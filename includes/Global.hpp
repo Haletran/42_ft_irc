@@ -17,3 +17,4 @@
 #include <cerrno>
 #include "Client.hpp"
 #include "Server.hpp"
+#include "Channel.hpp"
