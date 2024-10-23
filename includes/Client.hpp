@@ -21,6 +21,7 @@ class Client
 		bool GetAuth();
 		void SetAuth(bool auth);
 		void SendMsg(const std::string &msg);
+		std::string getNickname();
 		~Client();
 
 };

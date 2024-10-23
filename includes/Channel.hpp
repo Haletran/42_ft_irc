@@ -14,5 +14,19 @@ class Channel : public Server
 		Channel(std::string channel_name);
 		~Channel();
 		const std::string &GetChannelName();
+		std::string getTopic();
+		void setTopic(std::string topic);
 		bool operator==(const std::string &other) const;
+		class ChannelException : public std::exception
+		{
+			public :
+				ChannelException(const std::string &msg) : _msg(msg) {}
+				virtual const char *what() const throw()
+				{
+					return _msg.c_str();
+				}
+				~ChannelException() throw() {}
+			private :
+				std::string _msg;
+		};
 };

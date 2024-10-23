@@ -31,7 +31,7 @@ class Server
 		void JoinChannel(const std::string &channel, Client *client);
 		void LeaveChannel(const std::string &channel, Client *client);
 		Channel *getChannelByName(const std::string &channel);
-		void SendMessageToChannel(const std::string &channel, const std::string &msg, Client *client);
+		void SendMessageToChannel(const std::string& channel_name, Client* sender, const std::string& message);
 		//void AddMessageToChannel(const std::string &channel, const std::string &msg);
 		//std::vector<std::string> GetMessagesFromChannel(const std::string &channel); //todo
 		std::vector<Client*> GetClientsFromChannel(const std::string &channel); //todo

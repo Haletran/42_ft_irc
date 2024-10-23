@@ -18,3 +18,4 @@
 #include "Client.hpp"
 #include "Server.hpp"
 #include "Channel.hpp"
+#define ERR_NOSUCHCHANNEL 403

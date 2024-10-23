@@ -195,7 +195,6 @@ void Server::AcceptClient()
 }
 
 
-
 void Server::ReceiveNewData(int fd)
 {
 	char buffer[1024];
@@ -237,30 +236,32 @@ void Server::JoinChannel(const std::string &channel_name, Client *client)
         return;
     }
     std::string trimmed_channel_name = trimNewline(channel_name);
-    std::string join_msg = ":" + client->GetUsername() + " JOIN " + trimmed_channel_name + "\r\n";
-    client->SendMsg(join_msg);
     Channel* channel = getChannelByName(trimmed_channel_name);
+    std::string joinMsg = ":" + client->GetNick() + "!" + client->GetUsername() + "@localhost JOIN :" + trimmed_channel_name + "\r\n";
     if (channel != NULL)
     {
         _channels[channel].push_back(client);
-        std::string msg = ":" + client->GetUsername() + " has joined the channel " + trimmed_channel_name + "\r\n";
-        std::vector<Client*> clientsInChannel = GetClientsFromChannel(trimmed_channel_name);
-        for (std::vector<Client*>::iterator clientIt = clientsInChannel.begin(); clientIt != clientsInChannel.end(); ++clientIt)
-        {
-            if (*clientIt != client)
-                (*clientIt)->SendMsg(msg);
-        }
+        for (std::vector<Client*>::iterator it = _channels[channel].begin(); it != _channels[channel].end(); ++it)
+			(*it)->SendMsg(joinMsg);
     }
     else
     {
-        Channel* newChannel = new Channel(trimmed_channel_name);
-        _channels[newChannel].push_back(client);
-        std::string msg = "Channel " + trimmed_channel_name + " created\r\n";
-        client->SendMsg(msg);
-        msg = "You joined channel " + trimmed_channel_name + "\r\n";
-        client->SendMsg(msg);
+        try 
+        {
+            Channel* newChannel = new Channel(trimmed_channel_name);
+            _channels[newChannel].push_back(client);
+            client->SendMsg(joinMsg);
+        }
+        catch (Channel::ChannelException &e)
+        {
+            std::cerr << e.what() << std::endl;
+            std::string errMsg = "Error: " + std::string(e.what()) + "\r\n";
+            client->SendMsg(errMsg);
+            return;
+        }
     }
 }
+
 
 void Server::LeaveChannel(const std::string &channel_name, Client *client)
 {

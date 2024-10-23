@@ -1,18 +1,52 @@
 #include "../includes/Global.hpp"
 #include <sstream>
 
+
+std::string parseChannelName(const std::string &line) {
+    const std::string prefix = "PRIVMSG ";
+    if (line.find(prefix) != 0) {
+        std::cerr << "Invalid message format" << std::endl;
+        return "";
+    }
+    std::string rest = line.substr(prefix.length());
+    size_t space_pos = rest.find(' ');
+    if (space_pos == std::string::npos) {
+        std::cerr << "Invalid message format" << std::endl;
+        return "";
+    }
+    std::string channel = rest.substr(0, space_pos);
+    return channel;
+}
+
 void Server::ProcedeCommand(const std::string &msg, Client *client)
 {
-	std::string::size_type i = msg.find(" ");
-    if (i == std::string::npos) {
-        std::cerr << "Invalid message format" << std::endl;
+	std::istringstream stream(msg);
+    std::string command, channel, parameters;
+	if (!(stream >> command)) {
+        std::cerr << "Invalid message format: No command found" << std::endl;
         return;
     }
-    std::string command = msg.substr(0, i);
-    std::string rest = msg.substr(i + 1);
-    std::string::size_type j = rest.find(" ");
-    std::string channel = rest.substr(0, j);
-    std::string parameters = rest.substr(j + 1);
+	if (!(stream >> channel)) {
+		std::cerr << "Invalid message format: No channel found" << std::endl;
+		return;
+	}
+	if (channel.find_first_of("\r\n") != std::string::npos) {
+		channel = trimNewline(channel);
+	}
+	if (channel.find("\n") != std::string::npos) {
+		channel = channel.substr(0, channel.length() - 1);
+	}
+	std::getline(stream, parameters);
+	if (!parameters.empty() && parameters[0] == ' ') {
+        parameters.erase(0, 1);
+    }
+	if(parameters.find_first_not_of(" \r\n") == std::string::npos)
+	{
+		parameters.clear();
+	}  
+	if (parameters[0] == ':') {
+		parameters.erase(0, 1);
+	}
     std::cout << "Command: " << command << " Channel: " << channel << " Parameters: " << parameters << std::endl;
     if (command == "JOIN") {
         if (channel[channel.length() - 1] == '\n')
@@ -42,31 +76,35 @@ void Server::ProcedeCommand(const std::string &msg, Client *client)
 	}
 	else if (command == "PRIVMSG")
 	{
-		std::string formated_message = ":" + client->GetUsername() + " " + msg;
-		std::string channel = GetChannelName(msg);
-   		SendMessageToChannel(channel, formated_message, client);
+		std::string channel = parseChannelName(msg);
+		std::string msg_content = msg.substr(msg.find(":", 1) + 1);
+		std::cout << "Channel: " << channel << " Message: " << msg_content << std::endl;
+   		SendMessageToChannel(channel, client, msg_content);
 	}
-	else
+	else if (command == "TOPIC")
 	{
-		std::string msg = "Unknown command\n";
-		client->SendMsg(msg);
+		if (parameters.empty())
+		{
+			std::string currentTopic = getChannelByName(channel)->getTopic();
+       		if (currentTopic.empty()) 
+			{
+            	std::string msg = ":localhost 331 " + client->GetNick() + " " + channel + " :No topic is set\r\n";
+            	client->SendMsg(msg);
+        	} 
+			else 
+			{
+            	std::string msg = ":localhost 332 " + client->GetNick() + " " + channel + " :" + currentTopic + "\r\n";
+            	client->SendMsg(msg);
+        	}
+		}
+		else
+		{
+			getChannelByName(channel)->setTopic(parameters);
+			std::string notificationMsg = ":" + client->GetNick() + "!" + client->GetUsername() + "@localhost TOPIC " + channel + " :" + parameters + "\r\n";
+			for (std::vector<Client*>::iterator it = _channels[getChannelByName(channel)].begin(); it != _channels[getChannelByName(channel)].end(); ++it)
+					(*it)->SendMsg(notificationMsg);
+		}
 	}
-}
-
-std::string GetChannelName(const std::string &line) {
-    const std::string prefix = "PRIVMSG ";
-    if (line.find(prefix) != 0) {
-        std::cerr << "Invalid message format" << std::endl;
-        return "";
-    }
-    std::string rest = line.substr(prefix.length());
-    size_t space_pos = rest.find(' ');
-    if (space_pos == std::string::npos) {
-        std::cerr << "Invalid message format" << std::endl;
-        return "";
-    }
-    std::string channel = rest.substr(0, space_pos);
-    return channel;
 }
 
 void Server::ProcedeMessage(const std::string &msg, Client *client)
@@ -86,56 +124,21 @@ std::string trimNewline(const std::string &str) {
     return (end == std::string::npos) ? "" : str.substr(0, end + 1);
 }
 
-void Server::SendMessageToChannel(const std::string &channelName, const std::string &msg, Client *client)
+void Server::SendMessageToChannel(const std::string& channel_name, Client* sender, const std::string& message) 
 {
-    std::string trimmedChannelName = trimNewline(channelName);
-    Channel* channel = getChannelByName(trimmedChannelName);
-    if (channel != NULL)
-    {
-        std::string formatted_msg = ":" + client->GetUsername() + "!" + client->GetNick() + " PRIVMSG " + trimmedChannelName + " :" + msg + "\r\n";
-        std::vector<Client*> clientsInChannel = GetClientsFromChannel(trimmedChannelName);
-        for (std::vector<Client*>::iterator clientIt = clientsInChannel.begin(); clientIt != clientsInChannel.end(); ++clientIt)
-        {
-            std::cout << "Sending message to client: " << (*clientIt)->GetUsername() << std::endl;
-            if (*clientIt != client)
-            {
-                (*clientIt)->SendMsg(formatted_msg);
-            }
+    Channel* channel = getChannelByName(channel_name);
+    if (channel == NULL) {
+        std::string errorMsg = "Channel " + channel_name + " does not exist.\r\n";
+        sender->SendMsg(errorMsg);
+        return;
+    }
+    std::string formatted_message = ":" + sender->GetNick() + "!" + sender->GetUsername() + "@localhost PRIVMSG " + channel_name + " :" + message + "\r\n";
+    for (std::vector<Client*>::iterator it = _channels[channel].begin(); it != _channels[channel].end(); ++it) {
+        if (*it != sender) {
+            (*it)->SendMsg(formatted_message);
         }
     }
-    else
-    {
-        std::string error_msg = "Channel does not exist\n";
-        client->SendMsg(error_msg);
-    }
 }
-
-/* void Server::AddMessageToChannel(const std::string &channel, const std::string &msg)
-{
-    Channel* channelPtr = getChannelByName(channel);
-    if (channelPtr != NULL)
-    {
-        _channelMessages[channelPtr].push_back(msg);
-    }
-    else
-    {
-        std::cerr << "Channel " << channel << " does not exist" << std::endl;
-    }
-} */
-
-/* std::vector<std::string> Server::GetMessagesFromChannel(const std::string &channel)
-{
-    Channel* channelPtr = getChannelByName(channel);
-    if (channelPtr != NULL)
-    {
-        return _channelMessages[channelPtr];
-    }
-    else
-    {
-        std::cerr << "Channel does not exist" << std::endl;
-        return std::vector<std::string>();
-    }
-} */
 
 void Server::KickFromChannel(const std::string &nick, const std::string &channel, Client *client)
 {
