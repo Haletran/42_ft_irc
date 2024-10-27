@@ -78,7 +78,6 @@ void Server::ProcedeCommand(const std::string &msg, Client *client)
 	{
 		std::string channel = parseChannelName(msg);
 		std::string msg_content = msg.substr(msg.find(":", 1) + 1);
-		std::cout << "Channel: " << channel << " Message: " << msg_content << std::endl;
    		SendMessageToChannel(channel, client, msg_content);
 	}
 	else if (command == "TOPIC")
@@ -140,20 +139,21 @@ void Server::SendMessageToChannel(const std::string& channel_name, Client* sende
     }
 }
 
-void Server::KickFromChannel(const std::string &nick, const std::string &channel, Client *client)
+void Server::KickFromChannel( const std::string &channel,const std::string &nickname,  Client *client)
 {
-    std::string trimmed_channel_name = trimNewline(channel);
-    Channel* channelPtr = getChannelByName(trimmed_channel_name);
+    
+    std::string nick = trimNewline(nickname);
+    Channel* channelPtr = getChannelByName(channel);
     if (channelPtr != NULL)
     {
-        std::vector<Client*> clientsInChannel = GetClientsFromChannel(trimmed_channel_name);
+        std::vector<Client*> clientsInChannel = GetClientsFromChannel(channel);
         for (std::vector<Client*>::iterator clientIt = clientsInChannel.begin(); clientIt != clientsInChannel.end(); ++clientIt)
         {
             if ((*clientIt)->GetNick() == nick)
             {
-                std::string msg = "You have been kicked from channel " + trimmed_channel_name + "\n";
+                std::string msg = "You have been kicked from channel " + channel + "\n";
                 (*clientIt)->SendMsg(msg);
-                LeaveChannel(trimmed_channel_name, *clientIt);
+                LeaveChannel(channel, *clientIt);
                 break;
             }
         }
