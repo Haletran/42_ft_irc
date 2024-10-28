@@ -139,28 +139,29 @@ void Server::SendMessageToChannel(const std::string& channel_name, Client* sende
     }
 }
 
-void Server::KickFromChannel( const std::string &channel,const std::string &nickname,  Client *client)
+void Server::KickFromChannel(const std::string &channel, const std::string &nickname, Client *client)
 {
-    
     std::string nick = trimNewline(nickname);
     Channel* channelPtr = getChannelByName(channel);
-    if (channelPtr != NULL)
+    if (channelPtr == NULL) 
     {
-        std::vector<Client*> clientsInChannel = GetClientsFromChannel(channel);
-        for (std::vector<Client*>::iterator clientIt = clientsInChannel.begin(); clientIt != clientsInChannel.end(); ++clientIt)
-        {
-            if ((*clientIt)->GetNick() == nick)
+        std::string errorMsg = "403 " + client->GetNick() + " " + channel + " :No such channel\r\n";
+        client->SendMsg(errorMsg);
+        return;
+    }
+    std::vector<Client*> &clientsInChannel = _channels[channelPtr];
+    for (std::vector<Client*>::iterator clientIt = clientsInChannel.begin(); clientIt != clientsInChannel.end(); ++clientIt) {
+        if ((*clientIt)->GetNick() == nick) {
+            std::string kickMsg = ":" + client->GetNick() + " KICK " + channel + " " + nick + " :Kicked by " + client->GetNick() + "\r\n";
+            for (std::vector<Client*>::iterator notifyIt = clientsInChannel.begin(); notifyIt != clientsInChannel.end(); ++notifyIt) 
             {
-                std::string msg = "You have been kicked from channel " + channel + "\n";
-                (*clientIt)->SendMsg(msg);
-                LeaveChannel(channel, *clientIt);
-                break;
+                (*notifyIt)->SendMsg(kickMsg);
             }
+            LeaveChannel(channel, *clientIt);
+            return;
         }
     }
-    else
-    {
-        std::string msg = "Channel does not exist\n";
-        client->SendMsg(msg);
-    }
+    std::string errorMsg = ":localhost 441 " + client->GetNick() + " " + nick + " " + channel + " :They aren't on that channel\r\n";
+    client->SendMsg(errorMsg);
 }
+
