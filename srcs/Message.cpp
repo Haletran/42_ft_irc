@@ -50,12 +50,12 @@ void Server::ProcedeCommand(const std::string &msg, Client *client)
 	std::cout << "Command: " << command << " Channel: " << channel << " Parameters: " << parameters << std::endl;
 	switch (GetCommand(command))
 	{
-		case 0:
+		case 0: // JOIN
 		    if (channel[channel.length() - 1] == '\n')
 				channel = channel.substr(0, channel.length() - 1);
 		    JoinChannel(channel, client);
 		    break;
-		case 1:
+		case 1: // INVITE
 		{
 			std::string msg = ":" + client->GetUsername() + " INVITE " + channel + " " + parameters;
 			Client *test = get_ClientByUsername(channel);
@@ -73,17 +73,17 @@ void Server::ProcedeCommand(const std::string &msg, Client *client)
 			}
 			break;
 		}
-		case 2:
+		case 2: // KICK
 			KickFromChannel(channel, parameters, client);
 			break;
-		case 3:
+		case 3: // PRIVMSG
 		{
 			std::string channel = parseChannelName(msg);
 			std::string msg_content = msg.substr(msg.find(":", 1) + 1);
 			SendMessageToChannel(channel, client, msg_content);
 			break;
 		}
-		case 4:
+		case 4: // TOPIC
 		{
 			if (parameters.empty())
 			{
@@ -107,6 +107,58 @@ void Server::ProcedeCommand(const std::string &msg, Client *client)
 								(*it)->SendMsg(notificationMsg);
 			}
 			break;
+		}
+		case 5: // MODE
+		{
+		    // i : set the channel to invite only
+			//nickname!~username@IP MODE #channel +i
+			//:bapasqui!~bapasqui@localhost MODE #asd : +i
+		    // k <key> : set a channel key (password)
+		    // l <limit> : set the user limit
+		    // t : set the channel topic
+			std::string mode_array = "itkl";
+			int flag = 0;
+			if (parameters.size() < 0)
+			     break;
+
+			for (int i = 0; mode_array[i] ; i++)
+			{
+                if (parameters[i] == mode_array[i])
+				{
+				    flag = i;
+					break;
+				}
+		    }
+			if (parameters.size() > 0 && parameters.at(0) == '+')
+			{
+			   switch(flag) {
+			     case 1:
+			     	getChannelByName(channel)->setInviteOnly(true); break;
+			     case 2:
+			         getChannelByName(channel)->setUserLimit(10); break;
+			     case 3:
+			         getChannelByName(channel)->setPassword("haha"); break;
+			     case 4:
+					// not really that
+			   	    getChannelByName(channel)->setTopic("je suis le topic"); break;
+			   }
+			} else if (parameters.size() > 0 && parameters.at(0) == '-')
+			{
+                switch(flag) {
+                    case 1:
+                		getChannelByName(channel)->setInviteOnly(false); break;
+                	case 2:
+                	    getChannelByName(channel)->setUserLimit(10); break;
+                	case 3:
+                	    getChannelByName(channel)->setPassword(NULL); break;
+                	case 4:
+                        // not really that
+                	    getChannelByName(channel)->setTopic("je suis le topic"); break;
+                }
+			}
+			std::string notificationMsg = ":" + client->GetNick() + "!~" + client->GetUsername() + "@localhost MODE " + channel + " " + parameters + "\r\n";
+			for (std::vector<Client*>::iterator it = _channels[getChannelByName(channel)].begin(); it != _channels[getChannelByName(channel)].end(); ++it)
+					(*it)->SendMsg(notificationMsg);
 		}
 	}
 }

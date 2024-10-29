@@ -246,7 +246,7 @@ void Server::JoinChannel(const std::string &channel_name, Client *client)
     }
     else
     {
-        try 
+        try
         {
             Channel* newChannel = new Channel(trimmed_channel_name);
             _channels[newChannel].push_back(client);
