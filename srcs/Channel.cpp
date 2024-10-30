@@ -31,6 +31,7 @@ void Channel::setTopic(std::string topic)
 
 void Channel::setInviteOnly(bool invite_only)
 {
+    std::cout << "asfhsdg" << std::endl;
     _invite_only = invite_only;
 }
 
@@ -49,10 +50,29 @@ const std::string &Channel::GetChannelName()
 	return _channel_name;
 }
 
+bool Channel::getInvite()
+{
+    return(_invite_only);
+}
+
 bool Channel::operator==(const std::string &other) const
 {
         return _channel_name == other;
 }
+
+std::string Channel::getFlag()
+{
+    std::string backup;
+    int i = 0;
+    if (getInvite() == true)
+        backup[i++] = 'i';
+    if (!_password.empty())
+        backup[i++] = 'k';
+    if (_user_limit != std::numeric_limits<int>::max())
+        backup[i++] = 'l';
+    return (backup);
+}
+
 
 Channel::~Channel()
 {

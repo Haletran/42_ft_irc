@@ -56,6 +56,7 @@ void Server::SerSocket()
 {
 	struct sockaddr_in server_addr;
 	struct pollfd newpoll;
+	memset(&newpoll, 0, sizeof(newpoll));
 	server_addr.sin_family = AF_INET; // IPv4
 	server_addr.sin_addr.s_addr = INADDR_ANY; // Any local IP
 	server_addr.sin_port = htons(_port); // convert Port
@@ -90,7 +91,6 @@ void Server::ServerInit(int port, std::string pwd)
 	std::cout << "Server started on port: " << _port << std::endl;
 	std::cout << "Waiting for connections..." << std::endl;
 
-	//int poll(struct pollfd *fds, nfds_t nfds, int timeout);
 	while (!_signal)
 	{
 		if ((poll(&_pollfds[0], _pollfds.size(), -1) == -1) && _signal == false)
@@ -177,11 +177,13 @@ void Server::AcceptClient()
 	struct pollfd newpoll;
 	socklen_t addr_size = sizeof(client_addr);
 	//int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen); *addr = client address(retreive client ip and port) accept() returns client socket
+
+	memset(&newpoll, 0, sizeof(newpoll));
 	int new_fd = accept(_server_socket, (struct sockaddr *)&client_addr, &addr_size); // accept connection
 	if (new_fd == -1)
 		{std::cerr << "Failed to accept connection" << std::endl;return;}
 	if (fcntl(new_fd, F_SETFL, O_NONBLOCK) == -1) // set non-blocking
-		{std::cerr << "Failed to set non-blocking" << std::endl;return;}
+		{std::cerr << "Failed to set non-blocking" << std::endl; close(new_fd); return;}
 	newpoll.fd = new_fd;
 	newpoll.events = POLLIN;
 	newpoll.revents = 0;
@@ -191,7 +193,6 @@ void Server::AcceptClient()
 	new_client.SetIp(inet_ntoa(client_addr.sin_addr)); // convert ip to string
 	_clients.push_back(new_client);
 	std::cout << "New connection from: " << new_fd << std::endl;
-
 }
 
 
@@ -240,9 +241,15 @@ void Server::JoinChannel(const std::string &channel_name, Client *client)
     std::string joinMsg = ":" + client->GetNick() + "!" + client->GetUsername() + "@localhost JOIN :" + trimmed_channel_name + "\r\n";
     if (channel != NULL)
     {
+        if (channel->getInvite() == true)
+        {
+            std::string error_msg = ":localhost 473 " + client->GetNick() + " " + trimmed_channel_name + " :Cannot join channel (+i) - you must be invited\r\n";
+            client->SendMsg(error_msg);
+            return;
+        }
         _channels[channel].push_back(client);
         for (std::vector<Client*>::iterator it = _channels[channel].begin(); it != _channels[channel].end(); ++it)
-			(*it)->SendMsg(joinMsg);
+            (*it)->SendMsg(joinMsg);
     }
     else
     {

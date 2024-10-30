@@ -25,6 +25,8 @@ class Channel : public Server
 		void setInviteOnly(bool invite_only);
 		void setPassword(std::string password);
 		void setUserLimit(int user_limit);
+		bool getInvite();
+		std::string getFlag();
 
 		class ChannelException : public std::exception
 		{
