@@ -1,7 +1,6 @@
 #pragma once
 #include "Global.hpp"
 
-std::string trimNewline(const std::string &str);
 class Client;
 class Channel;
 class Server
@@ -11,7 +10,7 @@ class Server
 		std::string _pwd;
 		int _server_socket;
 		static bool _signal;
-		std::vector<Client> _clients;
+		std::vector<Client*> _clients;
 		std::vector<struct pollfd> _pollfds;
 		std::map<Channel*, std::vector<Client*> > _channels;
 	public :
@@ -39,6 +38,10 @@ class Server
 		void ProcedeMessage(const std::string &msg, Client *client);
 		void ProcedeCommand(const std::string &msg, Client *client);
 		void KickFromChannel(const std::string &nick, const std::string &channel, Client *client);
+		int GetCommand(std::string command);
 		Client *get_ClientByUsername(std::string username);
 		~Server();
+		void printtabclient_fd(std::vector<Client> _clients);
 };
+
+std::string trimNewline(const std::string &str);

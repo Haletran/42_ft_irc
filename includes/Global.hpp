@@ -15,6 +15,7 @@
 #include <cstring>
 #include <cstdlib>
 #include <cerrno>
+#include <limits>
 #include "Client.hpp"
 #include "Server.hpp"
 #include "Channel.hpp"
