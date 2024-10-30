@@ -6,6 +6,11 @@ Client::Client()
 	_auth = false;
 }
 
+Client::Client(Client const &src)
+{
+	*this = src;
+}
+
 int Client::GetFd()
 {
 	return _fd;
@@ -42,7 +47,7 @@ void Client::SendMsg(const std::string &msg)
     ssize_t bytes_sent = send(_fd, msg.c_str(), msg.length(), 0);
     if (bytes_sent == -1)
     {
-        std::cerr << "Error sending message: " << strerror(errno) << " (errno: " << errno << ")\n";
+        std::cerr << _fd <<": Error sending message: " << strerror(errno) << " (errno: " << errno << ")\n";
     }
     else if (bytes_sent < static_cast<ssize_t>(msg.length()))
     {
@@ -50,7 +55,7 @@ void Client::SendMsg(const std::string &msg)
     }
     else
     {
-        std::cout << "Message sent successfully: " << msg << std::endl;
+        std::cout<<_fd << ": Message sent successfully: " << msg << std::endl;
     }
 }
 

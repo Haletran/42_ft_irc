@@ -16,6 +16,8 @@ Channel::Channel(std::string channel_name)
         _channel_name = channel_name;
         _topic = "Nothing particular";
         _invite_only = false;
+		_password = "";
+		_user_limit = std::numeric_limits<int>::max();
     }
 }
 

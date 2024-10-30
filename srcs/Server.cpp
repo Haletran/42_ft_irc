@@ -23,7 +23,7 @@ void Server::ClearClients(int fd)
 	}
 	for (size_t i = 0; i < _clients.size(); i++)
 	{
-		if (_clients[i].GetFd() == fd)
+		if (_clients[i]->GetFd() == fd)
 		{
 			_clients.erase(_clients.begin() + i);
 			break;
@@ -42,8 +42,8 @@ void Server::CloseFds()
 {
 	for (size_t i = 0; i < _clients.size(); i++)
 	{
-		std::cout << "Closing fd: " << _clients[i].GetFd() << std::endl;
-		close(_clients[i].GetFd());
+		std::cout << "Closing fd: " << _clients[i]->GetFd() << std::endl;
+		close(_clients[i]->GetFd());
 	}
 	if (_server_socket != -1)
 	{
@@ -170,14 +170,17 @@ void Server::AuthenticateClient(int fd, std::string buffer)
 	}
 }
 
+
+
 void Server::AcceptClient()
 {
-	Client new_client;
+	Client * new_client = new Client();
 	struct sockaddr_in client_addr;
 	struct pollfd newpoll;
 	socklen_t addr_size = sizeof(client_addr);
 	//int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen); *addr = client address(retreive client ip and port) accept() returns client socket
 
+	bzero(&client_addr, sizeof(client_addr));
 	memset(&newpoll, 0, sizeof(newpoll));
 	int new_fd = accept(_server_socket, (struct sockaddr *)&client_addr, &addr_size); // accept connection
 	if (new_fd == -1)
@@ -189,12 +192,20 @@ void Server::AcceptClient()
 	newpoll.revents = 0;
 	_pollfds.push_back(newpoll);
 
-	new_client.SetFd(new_fd);
-	new_client.SetIp(inet_ntoa(client_addr.sin_addr)); // convert ip to string
+	new_client->SetFd(new_fd);
+	new_client->SetIp(inet_ntoa(client_addr.sin_addr)); // convert ip to string
 	_clients.push_back(new_client);
 	std::cout << "New connection from: " << new_fd << std::endl;
 }
 
+void Server::printtabclient_fd(std::vector<Client> _clients)
+{
+	for (size_t i = 0; i < _clients.size(); i++)
+	{
+		std::cout << "Client fd caca: " << _clients[i].GetFd() << std::endl;
+	}
+
+}
 
 void Server::ReceiveNewData(int fd)
 {
@@ -223,8 +234,8 @@ Client *Server::getClientByFd(int fd)
 {
 	for (size_t i = 0; i < _clients.size(); i++)
 	{
-		if (_clients[i].GetFd() == fd)
-			return &_clients[i];
+		if (_clients[i]->GetFd() == fd)
+			return _clients[i];
 	}
 	return NULL;
 }
@@ -333,8 +344,8 @@ Client *Server::get_ClientByUsername(std::string username)
 {
     for (size_t i = 0; i < _clients.size(); i++)
     {
-        if (_clients[i].GetUsername() == username)
-            return &_clients[i];
+        if (_clients[i]->GetUsername() == username)
+            return _clients[i];
     }
     return NULL;
 }

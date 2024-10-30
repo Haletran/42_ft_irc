@@ -114,15 +114,17 @@ void Server::ProcedeCommand(const std::string &msg, Client *client)
 			int flag = 0;
 			if (parameters.size() < 0)
 			     break;
-
-			for (int i = 0; mode_array[i] ; i++)
+			if (!parameters.empty())
 			{
-                if (parameters[i] == mode_array[i])
+				for (int i = 0; mode_array[i]; i++)
 				{
-				    flag = i;
-					break;
+					if (parameters[i] == mode_array[i])
+					{
+						flag = i;
+						break;
+					}
 				}
-		    }
+			}
 			if (parameters.size() > 0 && parameters.at(0) == '+')
 			{
 			   switch(flag) {
@@ -164,7 +166,7 @@ void Server::ProcedeCommand(const std::string &msg, Client *client)
 					(*it)->SendMsg(notificationMsg);
 		}
 		case 6:
-			close(client->GetFd());
+			ClearClients(client->GetFd());
 	}
 }
 

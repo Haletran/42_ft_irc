@@ -11,6 +11,7 @@ class Client
 		std::string _username;
 	public :
 		Client();
+		Client(Client const &src);
 		int GetFd();
 		void SetFd(int fd);
 		void SetIp(std::string ip);
