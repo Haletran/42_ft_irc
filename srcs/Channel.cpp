@@ -17,6 +17,7 @@ Channel::Channel(std::string channel_name)
         _topic = "Nothing particular";
         _invite_only = false;
 		_password = "";
+		password_needed = false;
 		_user_limit = std::numeric_limits<int>::max();
     }
 }
@@ -47,6 +48,12 @@ void Channel::setUserLimit(int user_limit)
     _user_limit = user_limit;
 }
 
+
+void Channel::setPasswordNeeded(bool condition)
+{
+    password_needed = condition;
+}
+
 const std::string &Channel::GetChannelName()
 {
 	return _channel_name;
@@ -73,6 +80,16 @@ std::string Channel::getFlag()
     if (_user_limit != std::numeric_limits<int>::max())
         backup[i++] = 'l';
     return (backup);
+}
+
+std::string Channel::getPassword()
+{
+    return (_password);
+}
+
+bool Channel::getPasswordNeeded()
+{
+    return(password_needed);
 }
 
 

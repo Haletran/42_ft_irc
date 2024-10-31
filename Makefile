@@ -24,6 +24,7 @@ $(OBJ_DIR)/%.o: srcs/%.cpp
 
 clean:
 	rm -f $(OBJ)
+	rm -rf $(OBJ_DIR)
 
 fclean: clean
 	rm -f $(TARGET)

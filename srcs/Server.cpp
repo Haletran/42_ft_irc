@@ -240,7 +240,7 @@ Client *Server::getClientByFd(int fd)
 	return NULL;
 }
 
-void Server::JoinChannel(const std::string &channel_name, Client *client)
+void Server::JoinChannel(const std::string &channel_name, Client *client, std::string parameters)
 {
     if (!client->GetAuth() || client->GetNick().empty() || client->GetUsername().empty())
     {
@@ -257,6 +257,15 @@ void Server::JoinChannel(const std::string &channel_name, Client *client)
             std::string error_msg = ":localhost 473 " + client->GetNick() + " " + trimmed_channel_name + " :Cannot join channel (+i) - you must be invited\r\n";
             client->SendMsg(error_msg);
             return;
+        }
+        else if (channel->getPasswordNeeded() == true)
+        {
+            if (parameters.compare(getChannelByName(channel_name)->getPassword()) != 0)
+            {
+                std::string error_msg = ":localhost 475 " + client->GetNick() + " " + trimmed_channel_name + " :Cannot join channel (+k) - bad key\r\n";
+                client->SendMsg(error_msg);
+                return;
+            }
         }
         _channels[channel].push_back(client);
         for (std::vector<Client*>::iterator it = _channels[channel].begin(); it != _channels[channel].end(); ++it)
