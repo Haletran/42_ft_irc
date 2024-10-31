@@ -1,5 +1,6 @@
 #include "../includes/Global.hpp"
 #include <sstream>
+#include <cstdlib>
 
 std::string parseChannelName(const std::string &line) {
   const std::string prefix = "PRIVMSG ";
@@ -129,7 +130,7 @@ void Server::ProcedeCommand(const std::string &msg, Client *client) {
         getChannelByName(channel)->setInviteOnly(true);
         break;
       case 1:
-        getChannelByName(channel)->setUserLimit(10);
+        getChannelByName(channel)->setTopic(parameters.substr(3));
         break;
       case 2:
         getChannelByName(channel)->setPassword(parameters.substr(3));
@@ -137,8 +138,10 @@ void Server::ProcedeCommand(const std::string &msg, Client *client) {
         break;
       case 3:
         // not really that
-        getChannelByName(channel)->setTopic("je suis le topic");
+        getChannelByName(channel)->setUserLimit(atoi(parameters.substr(3).c_str()));
+        std::cout << "LIMIT SET : " << getChannelByName(channel)->getlimit() << std::endl;
         break;
+
       }
     } else if (parameters.size() > 1 && parameters.at(0) == '-') {
       switch (flag) {
@@ -146,16 +149,17 @@ void Server::ProcedeCommand(const std::string &msg, Client *client) {
         getChannelByName(channel)->setInviteOnly(false);
         break;
       case 1:
-        getChannelByName(channel)->setUserLimit(11);
+        getChannelByName(channel)->setTopic("je suis le topic");
         break;
       case 2:
         if (parameters.substr(3) == getChannelByName(channel)->getPassword())
           getChannelByName(channel)->setPasswordNeeded(false);
         else
             return;
+        break;
       case 3:
         // not really that
-        getChannelByName(channel)->setTopic("je suis le topic");
+        getChannelByName(channel)->setUserLimit(std::numeric_limits<int>::max());
         break;
       }
     } else if (channel.at(0) == '#') {

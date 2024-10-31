@@ -31,6 +31,8 @@ class Channel : public Server
 		std::string getFlag();
 		std::string getPassword();
 		bool getPasswordNeeded();
+		int getNbUser() const;
+		int getlimit();
 
 		class ChannelException : public std::exception
 		{

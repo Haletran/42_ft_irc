@@ -48,7 +48,6 @@ void Channel::setUserLimit(int user_limit)
     _user_limit = user_limit;
 }
 
-
 void Channel::setPasswordNeeded(bool condition)
 {
     password_needed = condition;
@@ -92,6 +91,16 @@ bool Channel::getPasswordNeeded()
     return(password_needed);
 }
 
+int Channel::getNbUser() const
+{
+    return (_clients.size());
+}
+
+int Channel::getlimit()
+{
+    return (_user_limit);
+
+}
 
 Channel::~Channel()
 {

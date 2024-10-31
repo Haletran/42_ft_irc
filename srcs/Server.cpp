@@ -267,6 +267,12 @@ void Server::JoinChannel(const std::string &channel_name, Client *client, std::s
                 return;
             }
         }
+        else if (channel->getNbUser() + 1 >=  channel->getlimit())
+        {
+            std::string error_msg = ":localhost 471 " + client->GetNick() + " " + trimmed_channel_name + " :Cannot join channel (+l) - channel is full, try again later\r\n";
+            client->SendMsg(error_msg);
+            return;
+        }
         _channels[channel].push_back(client);
         for (std::vector<Client*>::iterator it = _channels[channel].begin(); it != _channels[channel].end(); ++it)
             (*it)->SendMsg(joinMsg);
