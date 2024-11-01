@@ -8,7 +8,7 @@ int main(int argc, char **argv)
 		return 1;
 	}
 	Server server;
-	std::cout << "---- SERVER ----" << std::endl;
+	std::cout << "\033[1;34m---- SERVER ----\033[0m" << std::endl;
 	try
 	{
 		signal(SIGINT, Server::SignalHandler);

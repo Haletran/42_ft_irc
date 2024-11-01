@@ -10,6 +10,7 @@ class Channel : public Server
 		std::string _topic;
 		bool _invite_only;
 		std::string _password;
+		bool password_needed;
 		int _user_limit;
 	public :
 		// COPLIEN
@@ -25,8 +26,13 @@ class Channel : public Server
 		void setInviteOnly(bool invite_only);
 		void setPassword(std::string password);
 		void setUserLimit(int user_limit);
+		void setPasswordNeeded(bool condition);
 		bool getInvite();
 		std::string getFlag();
+		std::string getPassword();
+		bool getPasswordNeeded();
+		int getNbUser() const;
+		int getlimit();
 
 		class ChannelException : public std::exception
 		{

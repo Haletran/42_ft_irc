@@ -8,8 +8,7 @@ Channel::Channel(std::string channel_name)
 {
     if (channel_name[0] != '#')
     {
-        std::string error_message = ":localhost 403 * " + channel_name + " :Channel name must start with '#'";
-        throw ChannelException(error_message);
+        throw ChannelException(CHANNEL_NAME_ERROR);
     }
     else
     {
@@ -17,6 +16,7 @@ Channel::Channel(std::string channel_name)
         _topic = "Nothing particular";
         _invite_only = false;
 		_password = "";
+		password_needed = false;
 		_user_limit = std::numeric_limits<int>::max();
     }
 }
@@ -33,7 +33,6 @@ void Channel::setTopic(std::string topic)
 
 void Channel::setInviteOnly(bool invite_only)
 {
-    std::cout << "asfhsdg" << std::endl;
     _invite_only = invite_only;
 }
 
@@ -45,6 +44,11 @@ void  Channel::setPassword(std::string password)
 void Channel::setUserLimit(int user_limit)
 {
     _user_limit = user_limit;
+}
+
+void Channel::setPasswordNeeded(bool condition)
+{
+    password_needed = condition;
 }
 
 const std::string &Channel::GetChannelName()
@@ -75,6 +79,26 @@ std::string Channel::getFlag()
     return (backup);
 }
 
+std::string Channel::getPassword()
+{
+    return (_password);
+}
+
+bool Channel::getPasswordNeeded()
+{
+    return(password_needed);
+}
+
+int Channel::getNbUser() const
+{
+    return (_clients.size());
+}
+
+int Channel::getlimit()
+{
+    return (_user_limit);
+
+}
 
 Channel::~Channel()
 {

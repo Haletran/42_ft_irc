@@ -19,4 +19,10 @@
 #include "Client.hpp"
 #include "Server.hpp"
 #include "Channel.hpp"
-#define ERR_NOSUCHCHANNEL 403
+#include "../includes/Log.hpp"
+
+
+// colors
+#define RED "\033[1;31m"
+#define GREEN "\033[1;32m"
+#define RESET "\033[0m"
