@@ -31,6 +31,7 @@ class Server
 		void LeaveChannel(const std::string &channel, Client *client);
 		Channel *getChannelByName(const std::string &channel);
 		void SendMessageToChannel(const std::string& channel_name, Client* sender, const std::string& message);
+		void executeCommand(std::string command, std::string channel, Client *client, std::string parameters, std::string msg);
 		//void AddMessageToChannel(const std::string &channel, const std::string &msg);
 		//std::vector<std::string> GetMessagesFromChannel(const std::string &channel); //todo
 		std::vector<Client*> GetClientsFromChannel(const std::string &channel); //todo

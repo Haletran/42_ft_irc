@@ -88,8 +88,10 @@ void Server::ServerInit(int port, std::string pwd)
 		throw std::runtime_error("Password cannot be empty");
 	_pwd = pwd;
 	SerSocket();
-	std::cout << "Server started on port: " << _port << std::endl;
-	std::cout << "Waiting for connections..." << std::endl;
+	std::cout << "\033[1;32mPORT : \033[0m" << _port << std::endl;
+	std::cout << "\033[1;32mPASSWORD : \033[0m" << _pwd << std::endl;
+	std::cout << "\033[1;33mWaiting for connections...\033[0m" << std::endl;
+	std::cout << "\033[1;34m----------------\033[0m" << std::endl;
 
 	while (!_signal)
 	{
@@ -137,7 +139,7 @@ void Server::AuthenticateClient(int fd, std::string buffer)
 				client->SetAuth(true);
 				std::string msg = "Authenticated\n";
 				send(fd, msg.c_str(), msg.length(), 0);
-				std::cout << "Client authenticated: " << fd << std::endl;
+				std::cout << "[Client FD: " << fd << "] : Authentication successful" << std::endl;
 			}
 			else
 			{
@@ -195,16 +197,15 @@ void Server::AcceptClient()
 	new_client->SetFd(new_fd);
 	new_client->SetIp(inet_ntoa(client_addr.sin_addr)); // convert ip to string
 	_clients.push_back(new_client);
-	std::cout << "New connection from: " << new_fd << std::endl;
+	std::cout << "-> New connection from: " << inet_ntoa(client_addr.sin_addr) << ":" << ntohs(client_addr.sin_port) << " (fd: " << new_fd << ")" << std::endl;
 }
 
 void Server::printtabclient_fd(std::vector<Client> _clients)
 {
 	for (size_t i = 0; i < _clients.size(); i++)
 	{
-		std::cout << "Client fd caca: " << _clients[i].GetFd() << std::endl;
+		std::cout << "Client fd : " << _clients[i].GetFd() << std::endl;
 	}
-
 }
 
 void Server::ReceiveNewData(int fd)
@@ -220,10 +221,7 @@ void Server::ReceiveNewData(int fd)
 		return;
 	}
 	else
-	{
 		buffer[bytes_read] = '\0';
-		std::cout << fd << " : " << buffer <<std::endl;
-	}
 	if (getClientByFd(fd)->GetAuth() == false || getClientByFd(fd)->GetNick().empty() || getClientByFd(fd)->GetUsername().empty())
 		AuthenticateClient(fd, buffer);
 	else
@@ -249,33 +247,29 @@ void Server::JoinChannel(const std::string &channel_name, Client *client, std::s
     }
     std::string trimmed_channel_name = trimNewline(channel_name);
     Channel* channel = getChannelByName(trimmed_channel_name);
-    std::string joinMsg = ":" + client->GetNick() + "!" + client->GetUsername() + "@localhost JOIN :" + trimmed_channel_name + "\r\n";
     if (channel != NULL)
     {
         if (channel->getInvite() == true)
         {
-            std::string error_msg = ":localhost 473 " + client->GetNick() + " " + trimmed_channel_name + " :Cannot join channel (+i) - you must be invited\r\n";
-            client->SendMsg(error_msg);
+            client->SendMsg(INVITE_ONLY_ERROR);
             return;
         }
         else if (channel->getPasswordNeeded() == true)
         {
             if (parameters.compare(getChannelByName(channel_name)->getPassword()) != 0)
             {
-                std::string error_msg = ":localhost 475 " + client->GetNick() + " " + trimmed_channel_name + " :Cannot join channel (+k) - bad key\r\n";
-                client->SendMsg(error_msg);
+                client->SendMsg(BAD_KEY_ERROR);
                 return;
             }
         }
         else if (channel->getNbUser() + 1 >=  channel->getlimit())
         {
-            std::string error_msg = ":localhost 471 " + client->GetNick() + " " + trimmed_channel_name + " :Cannot join channel (+l) - channel is full, try again later\r\n";
-            client->SendMsg(error_msg);
+            client->SendMsg(CHANNEL_FULL_ERROR);
             return;
         }
         _channels[channel].push_back(client);
         for (std::vector<Client*>::iterator it = _channels[channel].begin(); it != _channels[channel].end(); ++it)
-            (*it)->SendMsg(joinMsg);
+            (*it)->SendMsg(JOIN_MSG);
     }
     else
     {
@@ -283,7 +277,7 @@ void Server::JoinChannel(const std::string &channel_name, Client *client, std::s
         {
             Channel* newChannel = new Channel(trimmed_channel_name);
             _channels[newChannel].push_back(client);
-            client->SendMsg(joinMsg);
+            client->SendMsg(JOIN_MSG);
         }
         catch (Channel::ChannelException &e)
         {

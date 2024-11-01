@@ -43,7 +43,6 @@ void Client::SendMsg(const std::string &msg)
         std::cerr << "Client fd is -1" << std::endl;
         return;
     }
-
     ssize_t bytes_sent = send(_fd, msg.c_str(), msg.length(), 0);
     if (bytes_sent == -1)
     {
@@ -53,9 +52,8 @@ void Client::SendMsg(const std::string &msg)
     {
         std::cerr << "Partial message sent: " << bytes_sent << " out of " << msg.length() << " bytes\n";
     }
-    else
-    {
-        std::cout<<_fd << ": Message sent successfully: " << msg << std::endl;
+    else{
+        std::cerr << SEND_DEBUG << std::endl;
     }
 }
 

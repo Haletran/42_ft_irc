@@ -22,6 +22,14 @@ $(OBJ_DIR)/%.o: srcs/%.cpp
 	@mkdir -p $(OBJ_DIR)
 	$(CXX) $(CFLAGS) -c -o $@ $<
 
+hexchat:
+	@if ! flatpak list | grep -q io.github.Hexchat; then echo "Installing Hexchat..." && flatpak install flathub io.github.Hexchat -y ; else echo "Hexchat already installed"; fi
+
+test: re
+	@echo "Starting "$(TARGET)" and hexchat..."
+	@flatpak run io.github.Hexchat > /dev/null 2>&1 &
+	@./ircserv 6666 testtest2
+
 clean:
 	rm -f $(OBJ)
 	rm -rf $(OBJ_DIR)

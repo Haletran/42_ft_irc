@@ -8,8 +8,7 @@ Channel::Channel(std::string channel_name)
 {
     if (channel_name[0] != '#')
     {
-        std::string error_message = ":localhost 403 * " + channel_name + " :Channel name must start with '#'";
-        throw ChannelException(error_message);
+        throw ChannelException(CHANNEL_NAME_ERROR);
     }
     else
     {
@@ -34,7 +33,6 @@ void Channel::setTopic(std::string topic)
 
 void Channel::setInviteOnly(bool invite_only)
 {
-    std::cout << "asfhsdg" << std::endl;
     _invite_only = invite_only;
 }
 
