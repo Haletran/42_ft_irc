@@ -23,10 +23,13 @@ class Channel : public Server
 		std::string getTopic();
 		void setTopic(std::string topic);
 		const std::string &GetChannelName();
+		void addOperators(Client *client);
+		bool IsOP(Client *client);
 		void setInviteOnly(bool invite_only);
 		void setPassword(std::string password);
 		void setUserLimit(int user_limit);
 		void setPasswordNeeded(bool condition);
+		void getAllUser(Client *client);
 		bool getInvite();
 		std::string getFlag();
 		std::string getPassword();

@@ -2,20 +2,20 @@ CXX = c++
 
 CFLAGS = -Wall -Wextra -Werror -g -std=c++98
 
-SRC = srcs/main.cpp \
+SRCS = srcs/main.cpp \
 	srcs/Server.cpp \
 	srcs/Client.cpp \
 	srcs/Message.cpp \
 	srcs/Channel.cpp \
 
 OBJ_DIR = obj
-OBJ = $(addprefix $(OBJ_DIR)/, $(SRC:srcs/%.cpp=%.o))
+OBJ = $(addprefix $(OBJ_DIR)/, $(SRCS:srcs/%.cpp=%.o))
 
-TARGET = ircserv
+NAME = ircserv
 
-all: $(TARGET)
+all: $(NAME)
 
-$(TARGET): $(OBJ)
+$(NAME): $(OBJ)
 	$(CXX) $(CFLAGS) -o $@ $^
 
 $(OBJ_DIR)/%.o: srcs/%.cpp
@@ -26,7 +26,8 @@ hexchat:
 	@if ! flatpak list | grep -q io.github.Hexchat; then echo "Installing Hexchat..." && flatpak install flathub io.github.Hexchat -y ; else echo "Hexchat already installed"; fi
 
 test: re
-	@echo "Starting "$(TARGET)" and hexchat..."
+	@clear
+	@echo "Starting "$(NAME)" and hexchat..."
 	@flatpak run io.github.Hexchat > /dev/null 2>&1 &
 	@./ircserv 6666 testtest2
 
@@ -35,7 +36,7 @@ clean:
 	rm -rf $(OBJ_DIR)
 
 fclean: clean
-	rm -f $(TARGET)
+	rm -f $(NAME)
 
 re: fclean all
 

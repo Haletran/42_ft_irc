@@ -76,7 +76,10 @@ void Server::executeCommand(std::string command, std::string channel, Client *cl
       break;
     }
     case 2: // KICK
-      KickFromChannel(channel, parameters, client);
+      if (getChannelByName(channel)->IsOP(client) == false)
+        client->SendMsg(NOT_OP);
+      else
+        KickFromChannel(channel, parameters, client);
       break;
     case 3: // PRIVMSG
     {
@@ -87,20 +90,25 @@ void Server::executeCommand(std::string command, std::string channel, Client *cl
     }
     case 4: // TOPIC
     {
-      if (parameters.empty()) {
-        std::string currentTopic = getChannelByName(channel)->getTopic();
-        if (currentTopic.empty()) {
-          client->SendMsg(EMPTY_TOPIC);
-        } else {
-          client->SendMsg(TOPIC_ERROR);
-        }
-      } else {
-        getChannelByName(channel)->setTopic(parameters);
-        for (std::vector<Client *>::iterator it =
-                 _channels[getChannelByName(channel)].begin();
-             it != _channels[getChannelByName(channel)].end(); ++it)
-          (*it)->SendMsg(SET_TOPIC);
+      if (getChannelByName(channel)->IsOP(client) == true)
+      {
+          if (parameters.empty()) {
+              std::string currentTopic = getChannelByName(channel)->getTopic();
+              if (currentTopic.empty()) {
+                  client->SendMsg(EMPTY_TOPIC);
+              } else {
+                  client->SendMsg(TOPIC_ERROR);
+              }
+          } else {
+              getChannelByName(channel)->setTopic(parameters);
+              for (std::vector<Client *>::iterator it =
+                  _channels[getChannelByName(channel)].begin();
+                  it != _channels[getChannelByName(channel)].end(); ++it)
+              (*it)->SendMsg(SET_TOPIC);
+          }
       }
+      else
+        client->SendMsg(NOT_OP);
       break;
     }
     case 5: // MODE
@@ -111,6 +119,11 @@ void Server::executeCommand(std::string command, std::string channel, Client *cl
         break;
       if (getChannelByName(channel) == NULL)
           break;
+      if (getChannelByName(channel)->IsOP(client) == false)
+      {
+        client->SendMsg(NOT_OP);
+        break;
+      }
       if (!parameters.empty()) {
         for (size_t i = 0; i < mode_array.size(); i++) {
           if (parameters[1] == mode_array[i]) {
@@ -119,7 +132,6 @@ void Server::executeCommand(std::string command, std::string channel, Client *cl
           }
         }
       }
-      // check if operator
       if (parameters.size() > 1 && parameters.at(0) == '+') {
         switch (flag) {
         case 0:
