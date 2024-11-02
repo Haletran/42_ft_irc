@@ -7,6 +7,7 @@ class Channel : public Server
 		std::string _channel_name;
 		std::vector<Client*> _operators;
 		std::vector<Client*> _clients;
+		std::vector<Client*> _invited_clients;
 		std::string _topic;
 		bool _invite_only;
 		std::string _password;
@@ -24,7 +25,9 @@ class Channel : public Server
 		void setTopic(std::string topic);
 		const std::string &GetChannelName();
 		void addOperators(Client *client);
+		void addInvited(Client*);
 		bool IsOP(Client *client);
+		bool IsInvited(Client*);
 		void setInviteOnly(bool invite_only);
 		void setPassword(std::string password);
 		void setUserLimit(int user_limit);

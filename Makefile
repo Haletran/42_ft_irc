@@ -25,11 +25,16 @@ $(OBJ_DIR)/%.o: srcs/%.cpp
 hexchat:
 	@if ! flatpak list | grep -q io.github.Hexchat; then echo "Installing Hexchat..." && flatpak install flathub io.github.Hexchat -y ; else echo "Hexchat already installed"; fi
 
-test: re
+run: re
 	@clear
 	@echo "Starting "$(NAME)" and hexchat..."
 	@flatpak run io.github.Hexchat > /dev/null 2>&1 &
 	@./ircserv 6666 testtest2
+
+valgrind: re
+	@clear
+	@echo "Starting server with valgrind..."
+	@valgrind --leak-check=full --show-leak-kinds=all --track-fds=yes  ./ircserv 6666 testtest2
 
 clean:
 	rm -f $(OBJ)

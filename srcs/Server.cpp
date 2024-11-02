@@ -249,7 +249,7 @@ void Server::JoinChannel(const std::string &channel_name, Client *client, std::s
     Channel* channel = getChannelByName(trimmed_channel_name);
     if (channel != NULL)
     {
-        if (channel->getInvite() == true)
+        if (channel->getInvite() == true && channel->IsInvited(client) == false)
         {
             client->SendMsg(INVITE_ONLY_ERROR);
             return;

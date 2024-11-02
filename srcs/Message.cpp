@@ -1,4 +1,5 @@
 #include "../includes/Global.hpp"
+#include <exception>
 #include <sstream>
 #include <cstdlib>
 
@@ -71,7 +72,14 @@ void Server::executeCommand(std::string command, std::string channel, Client *cl
         client->SendMsg(INVITE_USER_ERROR);
       } else {
         client->SendMsg(INVITE_SUCCESS_MSG);
-        JoinChannel(parameters, test, NULL);
+        test->SendMsg(INVITE_MSG_NEW);
+        // parameters is channel in this case
+        Channel *asd = getChannelByName(parameters);
+        if (asd == NULL)
+        {
+            std::cerr << "Channel is NULL" << std::endl; break;
+        }
+        asd->addInvited(test);
       }
       break;
     }
