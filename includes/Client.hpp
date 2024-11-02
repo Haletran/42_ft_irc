@@ -24,5 +24,4 @@ class Client
 		void SendMsg(const std::string &msg);
 		std::string getNickname();
 		~Client();
-
 };

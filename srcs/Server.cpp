@@ -249,7 +249,7 @@ void Server::JoinChannel(const std::string &channel_name, Client *client, std::s
     Channel* channel = getChannelByName(trimmed_channel_name);
     if (channel != NULL)
     {
-        if (channel->getInvite() == true)
+        if (channel->getInvite() == true && channel->IsInvited(client) == false)
         {
             client->SendMsg(INVITE_ONLY_ERROR);
             return;
@@ -270,14 +270,19 @@ void Server::JoinChannel(const std::string &channel_name, Client *client, std::s
         _channels[channel].push_back(client);
         for (std::vector<Client*>::iterator it = _channels[channel].begin(); it != _channels[channel].end(); ++it)
             (*it)->SendMsg(JOIN_MSG);
+        channel->getAllUser(client);
+        client->SendMsg(END_OF_NAMES_MSG);
     }
     else
     {
         try
         {
-            Channel* newChannel = new Channel(trimmed_channel_name);
-            _channels[newChannel].push_back(client);
+            Channel* channel = new Channel(trimmed_channel_name);
+            _channels[channel].push_back(client);
+            channel->addOperators(client);
             client->SendMsg(JOIN_MSG);
+            client->SendMsg(NEW_CHANNEL_MSG);
+            client->SendMsg(END_OF_NAMES_MSG);
         }
         catch (Channel::ChannelException &e)
         {

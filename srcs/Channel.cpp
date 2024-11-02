@@ -100,6 +100,61 @@ int Channel::getlimit()
 
 }
 
+void Channel::addOperators(Client *client)
+{
+    if (!client)
+        throw std::runtime_error(OPERATOR_ERROR);
+    _operators.push_back(client);
+}
+
+void Channel::addInvited(Client* client)
+{
+    if (!client)
+        throw std::runtime_error("Client pointer is null");
+    _invited_clients.push_back(client);
+}
+
+void Channel::getAllUser(Client *client)
+{
+    std::string array_op;
+    std::string array_user;
+    _clients.push_back(client);
+    for (std::vector<Client*>::iterator it = _operators.begin(); it != _operators.end(); ++it)
+    {
+        array_op += "@" + (*it)->getNickname() + " ";
+    }
+    for (std::vector<Client*>::iterator it = _clients.begin(); it != _clients.end(); ++it)
+    {
+        array_user += (*it)->getNickname() + " ";
+    }
+    client->SendMsg(LIST_USER);
+}
+
+
+bool Channel::IsOP(Client *client)
+{
+    std::string username = client->GetUsername();
+    for (std::vector<Client*>::iterator it = _operators.begin(); it != _operators.end(); ++it)
+    {
+        if ((*it)->GetUsername() == username)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool Channel::IsInvited(Client*client)
+{
+    std::string username = client->GetUsername();
+    for (std::vector<Client*>::iterator it = _invited_clients.begin(); it != _invited_clients.end(); ++it)
+    {
+        if ((*it)->GetUsername() == username)
+            return true;
+    }
+    return false;
+}
+
 Channel::~Channel()
 {
 }
