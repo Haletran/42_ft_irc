@@ -2,6 +2,7 @@
 
 Channel::Channel() : _channel_name("#general"),  _topic("Nothing particular"), _invite_only(false), _password(NULL), _user_limit(std::numeric_limits<int>::max())
 {
+    this->_topic_change = true;
 }
 
 Channel::Channel(std::string channel_name)
@@ -17,6 +18,7 @@ Channel::Channel(std::string channel_name)
         _invite_only = false;
 		_password = "";
 		password_needed = false;
+		_topic_change = true;
 		_user_limit = std::numeric_limits<int>::max();
     }
 }
@@ -40,6 +42,18 @@ void  Channel::setPassword(std::string password)
 {
     _password = password;
 }
+
+
+void Channel::setTopicChange(bool value)
+{
+    _topic_change = value;
+}
+
+bool Channel::getTopicChange()
+{
+    return (_topic_change);
+}
+
 
 void Channel::setUserLimit(int user_limit)
 {

@@ -98,24 +98,41 @@ void Server::executeCommand(std::string command, std::string channel,
   }
   case 4: // TOPIC
   {
-    if (getChannelByName(channel)->IsOP(client) == true) {
-      if (parameters.empty()) {
-        std::string currentTopic = getChannelByName(channel)->getTopic();
-        if (currentTopic.empty()) {
-          client->SendMsg(EMPTY_TOPIC);
-        } else {
-          client->SendMsg(TOPIC_ERROR);
-        }
+      Channel *chan = getChannelByName(channel);
+      if (chan->getTopicChange() == false && chan->IsOP(client)) {
+          if (parameters.empty()) {
+            std::string currentTopic = getChannelByName(channel)->getTopic();
+            if (currentTopic.empty()) {
+              client->SendMsg(EMPTY_TOPIC);
+            } else {
+              client->SendMsg(TOPIC_ERROR);
+            }
+          } else {
+            getChannelByName(channel)->setTopic(parameters);
+            for (std::vector<Client *>::iterator it =
+                     _channels[getChannelByName(channel)].begin();
+                 it != _channels[getChannelByName(channel)].end(); ++it)
+              (*it)->SendMsg(SET_TOPIC);
+          }
+      } else if (chan->getTopicChange() == true) {
+          if (parameters.empty()) {
+            std::string currentTopic = getChannelByName(channel)->getTopic();
+            if (currentTopic.empty()) {
+              client->SendMsg(EMPTY_TOPIC);
+            } else {
+              client->SendMsg(TOPIC_ERROR);
+            }
+          } else {
+            getChannelByName(channel)->setTopic(parameters);
+            for (std::vector<Client *>::iterator it =
+                     _channels[getChannelByName(channel)].begin();
+                 it != _channels[getChannelByName(channel)].end(); ++it)
+              (*it)->SendMsg(SET_TOPIC);
+          }
       } else {
-        getChannelByName(channel)->setTopic(parameters);
-        for (std::vector<Client *>::iterator it =
-                 _channels[getChannelByName(channel)].begin();
-             it != _channels[getChannelByName(channel)].end(); ++it)
-          (*it)->SendMsg(SET_TOPIC);
+          client->SendMsg(NOT_OP);
       }
-    } else
-      client->SendMsg(NOT_OP);
-    break;
+      break;
   }
   case 5: // MODE
   {
@@ -143,7 +160,7 @@ void Server::executeCommand(std::string command, std::string channel,
         getChannelByName(channel)->setInviteOnly(true);
         break;
       case 1:
-        getChannelByName(channel)->setTopic(parameters.substr(3));
+        getChannelByName(channel)->setTopicChange(false);
         break;
       case 2:
         getChannelByName(channel)->setPassword(parameters.substr(3));
@@ -160,7 +177,7 @@ void Server::executeCommand(std::string command, std::string channel,
         getChannelByName(channel)->setInviteOnly(false);
         break;
       case 1:
-        getChannelByName(channel)->setTopic("je suis le topic");
+        getChannelByName(channel)->setTopicChange(true);
         break;
       case 2:
         if (parameters.substr(3) == getChannelByName(channel)->getPassword())

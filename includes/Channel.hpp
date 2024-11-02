@@ -10,6 +10,7 @@ class Channel : public Server
 		std::vector<Client*> _invited_clients;
 		std::string _topic;
 		bool _invite_only;
+		bool _topic_change;
 		std::string _password;
 		bool password_needed;
 		int _user_limit;
@@ -29,12 +30,14 @@ class Channel : public Server
 		bool IsOP(Client *client);
 		bool IsInvited(Client*);
 		void setInviteOnly(bool invite_only);
+		void setTopicChange(bool value);
 		void setPassword(std::string password);
 		void setUserLimit(int user_limit);
 		void setPasswordNeeded(bool condition);
 		void getAllUser(Client *client);
 		bool isAlreadyConnected(Client *client);
 		bool getInvite();
+		bool getTopicChange();
 		std::string getFlag();
 		std::string getPassword();
 		bool getPasswordNeeded();
