@@ -41,6 +41,7 @@ class Server
 		void KickFromChannel(const std::string &nick, const std::string &channel, Client *client);
 		int GetCommand(std::string command);
 		Client *get_ClientByUsername(std::string username);
+		Channel *getCurrentChannel(Client *client);
 		~Server();
 		void printtabclient_fd(std::vector<Client> _clients);
 };

@@ -363,3 +363,15 @@ Client *Server::get_ClientByUsername(std::string username)
     }
     return NULL;
 }
+
+Channel *Server::getCurrentChannel(Client *client){
+    for (std::map<Channel*, std::vector<Client*> >::iterator it = _channels.begin(); it != _channels.end(); ++it) {
+        std::vector<Client*> clients = it->second;
+        for (size_t i = 0; i < clients.size(); i++) {
+            if (clients[i] == client) {
+                return it->first;
+            }
+        }
+    }
+    return NULL;
+}

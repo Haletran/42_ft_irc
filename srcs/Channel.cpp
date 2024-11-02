@@ -155,6 +155,22 @@ bool Channel::IsInvited(Client*client)
     return false;
 }
 
+bool Channel::isAlreadyConnected(Client *client)
+{
+    std::string username = client->GetUsername();
+    for (std::vector<Client*>::iterator it = _clients.begin(); it != _clients.end(); ++it)
+    {
+        if ((*it)->GetUsername() == username)
+            return true;
+    }
+    for (std::vector<Client*>::iterator it = _operators.begin(); it != _operators.end(); ++it)
+    {
+        if ((*it)->GetUsername() == username)
+            return true;
+    }
+    return false;
+}
+
 Channel::~Channel()
 {
 }

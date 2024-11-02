@@ -1,7 +1,7 @@
 #include "../includes/Global.hpp"
+#include <cstdlib>
 #include <exception>
 #include <sstream>
-#include <cstdlib>
 
 std::string parseChannelName(const std::string &line) {
   const std::string prefix = "PRIVMSG ";
@@ -19,7 +19,8 @@ std::string parseChannelName(const std::string &line) {
   return channel;
 }
 
-bool parseMessage(const std::string &msg, std::string &command, std::string &channel, std::string &parameters) {
+bool parseMessage(const std::string &msg, std::string &command,
+                  std::string &channel, std::string &parameters) {
   std::istringstream stream(msg);
   if (!(stream >> command)) {
     return false;
@@ -49,151 +50,148 @@ bool parseMessage(const std::string &msg, std::string &command, std::string &cha
 void Server::ProcedeCommand(const std::string &msg, Client *client) {
   std::string command, channel, parameters;
   if (!parseMessage(msg, command, channel, parameters)) {
-      std::cerr << "Invalid message format" << std::endl;
-      return;
+    std::cerr << "Invalid message format" << std::endl;
+    return;
   }
   std::cerr << RECEIVE_DEBUG << std::endl;
   executeCommand(command, channel, client, parameters, msg);
 }
 
-
-void Server::executeCommand(std::string command, std::string channel, Client *client, std::string parameters, std::string msg)
-{
-    switch (GetCommand(command)) {
-    case 0: // JOIN
-      if (channel[channel.length() - 1] == '\n')
-        channel = channel.substr(0, channel.length() - 1);
-      JoinChannel(channel, client, parameters);
-      break;
-    case 1: // INVITE
-    {
-      Client *test = get_ClientByUsername(channel);
-      if (!test) {
-        client->SendMsg(INVITE_USER_ERROR);
+void Server::executeCommand(std::string command, std::string channel,
+                            Client *client, std::string parameters,
+                            std::string msg) {
+  switch (GetCommand(command)) {
+  case 0: // JOIN
+    if (channel[channel.length() - 1] == '\n')
+      channel = channel.substr(0, channel.length() - 1);
+    JoinChannel(channel, client, parameters);
+    break;
+  case 1: // INVITE
+  {
+    Client *test = get_ClientByUsername(channel);
+    Channel *channel_instance = getCurrentChannel(client);
+    if (!test) {
+      client->SendMsg(INVITE_USER_ERROR);
+    } else if (channel_instance->isAlreadyConnected(test) == false) {
+      client->SendMsg(INVITE_SUCCESS_MSG);
+      test->SendMsg(INVITE_MSG_NEW);
+      if (channel_instance == NULL) {
+        std::cerr << "Channel is NULL" << std::endl;
+        break;
+      }
+      channel_instance->addInvited(test);
+    }
+    break;
+  }
+  case 2: // KICK
+    if (getChannelByName(channel)->IsOP(client) == false)
+      client->SendMsg(NOT_OP);
+    else
+      KickFromChannel(channel, parameters, client);
+    break;
+  case 3: // PRIVMSG
+  {
+    std::string channel = parseChannelName(msg);
+    std::string msg_content = msg.substr(msg.find(":", 1) + 1);
+    SendMessageToChannel(channel, client, msg_content);
+    break;
+  }
+  case 4: // TOPIC
+  {
+    if (getChannelByName(channel)->IsOP(client) == true) {
+      if (parameters.empty()) {
+        std::string currentTopic = getChannelByName(channel)->getTopic();
+        if (currentTopic.empty()) {
+          client->SendMsg(EMPTY_TOPIC);
+        } else {
+          client->SendMsg(TOPIC_ERROR);
+        }
       } else {
-        client->SendMsg(INVITE_SUCCESS_MSG);
-        test->SendMsg(INVITE_MSG_NEW);
-        // parameters is channel in this case
-        Channel *asd = getChannelByName(parameters);
-        if (asd == NULL)
-        {
-            std::cerr << "Channel is NULL" << std::endl; break;
-        }
-        asd->addInvited(test);
+        getChannelByName(channel)->setTopic(parameters);
+        for (std::vector<Client *>::iterator it =
+                 _channels[getChannelByName(channel)].begin();
+             it != _channels[getChannelByName(channel)].end(); ++it)
+          (*it)->SendMsg(SET_TOPIC);
       }
+    } else
+      client->SendMsg(NOT_OP);
+    break;
+  }
+  case 5: // MODE
+  {
+    std::string mode_array = "itkl";
+    int flag = -1;
+    if (parameters.empty())
+      break;
+    if (getChannelByName(channel) == NULL)
+      break;
+    if (getChannelByName(channel)->IsOP(client) == false) {
+      client->SendMsg(NOT_OP);
       break;
     }
-    case 2: // KICK
-      if (getChannelByName(channel)->IsOP(client) == false)
-        client->SendMsg(NOT_OP);
-      else
-        KickFromChannel(channel, parameters, client);
-      break;
-    case 3: // PRIVMSG
-    {
-      std::string channel = parseChannelName(msg);
-      std::string msg_content = msg.substr(msg.find(":", 1) + 1);
-      SendMessageToChannel(channel, client, msg_content);
-      break;
-    }
-    case 4: // TOPIC
-    {
-      if (getChannelByName(channel)->IsOP(client) == true)
-      {
-          if (parameters.empty()) {
-              std::string currentTopic = getChannelByName(channel)->getTopic();
-              if (currentTopic.empty()) {
-                  client->SendMsg(EMPTY_TOPIC);
-              } else {
-                  client->SendMsg(TOPIC_ERROR);
-              }
-          } else {
-              getChannelByName(channel)->setTopic(parameters);
-              for (std::vector<Client *>::iterator it =
-                  _channels[getChannelByName(channel)].begin();
-                  it != _channels[getChannelByName(channel)].end(); ++it)
-              (*it)->SendMsg(SET_TOPIC);
-          }
-      }
-      else
-        client->SendMsg(NOT_OP);
-      break;
-    }
-    case 5: // MODE
-    {
-      std::string mode_array = "itkl";
-      int flag = -1;
-      if (parameters.empty())
-        break;
-      if (getChannelByName(channel) == NULL)
+    if (!parameters.empty()) {
+      for (size_t i = 0; i < mode_array.size(); i++) {
+        if (parameters[1] == mode_array[i]) {
+          flag = i;
           break;
-      if (getChannelByName(channel)->IsOP(client) == false)
-      {
-        client->SendMsg(NOT_OP);
+        }
+      }
+    }
+    if (parameters.size() > 1 && parameters.at(0) == '+') {
+      switch (flag) {
+      case 0:
+        getChannelByName(channel)->setInviteOnly(true);
+        break;
+      case 1:
+        getChannelByName(channel)->setTopic(parameters.substr(3));
+        break;
+      case 2:
+        getChannelByName(channel)->setPassword(parameters.substr(3));
+        getChannelByName(channel)->setPasswordNeeded(true);
+        break;
+      case 3:
+        getChannelByName(channel)->setUserLimit(
+            atoi(parameters.substr(3).c_str()));
         break;
       }
-      if (!parameters.empty()) {
-        for (size_t i = 0; i < mode_array.size(); i++) {
-          if (parameters[1] == mode_array[i]) {
-            flag = i;
-            break;
-          }
-        }
+    } else if (parameters.size() > 1 && parameters.at(0) == '-') {
+      switch (flag) {
+      case 0:
+        getChannelByName(channel)->setInviteOnly(false);
+        break;
+      case 1:
+        getChannelByName(channel)->setTopic("je suis le topic");
+        break;
+      case 2:
+        if (parameters.substr(3) == getChannelByName(channel)->getPassword())
+          getChannelByName(channel)->setPasswordNeeded(false);
+        else
+          return;
+        break;
+      case 3:
+        getChannelByName(channel)->setUserLimit(
+            std::numeric_limits<int>::max());
+        break;
       }
-      if (parameters.size() > 1 && parameters.at(0) == '+') {
-        switch (flag) {
-        case 0:
-          getChannelByName(channel)->setInviteOnly(true);
-          break;
-        case 1:
-          getChannelByName(channel)->setTopic(parameters.substr(3));
-          break;
-        case 2:
-          getChannelByName(channel)->setPassword(parameters.substr(3));
-          getChannelByName(channel)->setPasswordNeeded(true);
-          break;
-        case 3:
-          getChannelByName(channel)->setUserLimit(atoi(parameters.substr(3).c_str()));
-          break;
-        }
-      } else if (parameters.size() > 1 && parameters.at(0) == '-') {
-        switch (flag) {
-        case 0:
-          getChannelByName(channel)->setInviteOnly(false);
-          break;
-        case 1:
-          getChannelByName(channel)->setTopic("je suis le topic");
-          break;
-        case 2:
-          if (parameters.substr(3) == getChannelByName(channel)->getPassword())
-            getChannelByName(channel)->setPasswordNeeded(false);
-          else
-              return;
-          break;
-        case 3:
-          getChannelByName(channel)->setUserLimit(std::numeric_limits<int>::max());
-          break;
-        }
-      } else if (channel.at(0) == '#') {
-        std::string flag = getChannelByName(channel)->getFlag();
-        if (!flag.empty())
-        {
-            for (std::vector<Client *>::iterator it =
-                   _channels[getChannelByName(channel)].begin();
-                it != _channels[getChannelByName(channel)].end(); ++it)
-            (*it)->SendMsg(FLAG_MSG);
-        }
-        return;
+    } else if (channel.at(0) == '#') {
+      std::string flag = getChannelByName(channel)->getFlag();
+      if (!flag.empty()) {
+        for (std::vector<Client *>::iterator it =
+                 _channels[getChannelByName(channel)].begin();
+             it != _channels[getChannelByName(channel)].end(); ++it)
+          (*it)->SendMsg(FLAG_MSG);
       }
-      for (std::vector<Client *>::iterator it =
-               _channels[getChannelByName(channel)].begin();
-           it != _channels[getChannelByName(channel)].end(); ++it)
-        (*it)->SendMsg(MODE_MESSAGE);
-      break;
+      return;
     }
-    case 6:
-      ClearClients(client->GetFd());
-    }
+    for (std::vector<Client *>::iterator it =
+             _channels[getChannelByName(channel)].begin();
+         it != _channels[getChannelByName(channel)].end(); ++it)
+      (*it)->SendMsg(MODE_MESSAGE);
+    break;
+  }
+  case 6:
+    ClearClients(client->GetFd());
+  }
 }
 
 void Server::ProcedeMessage(const std::string &msg, Client *client) {
