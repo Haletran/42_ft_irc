@@ -33,6 +33,7 @@ class Channel : public Server
 		void setUserLimit(int user_limit);
 		void setPasswordNeeded(bool condition);
 		void getAllUser(Client *client);
+		bool isAlreadyConnected(Client *client);
 		bool getInvite();
 		std::string getFlag();
 		std::string getPassword();
