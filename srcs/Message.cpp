@@ -139,10 +139,7 @@ void Server::executeCommand(std::string command, std::string channel,
     std::string mode_array = "itkl";
     int flag = -1;
     if (parameters.empty())
-    {
-        SendInfos(channel, client);
         break;
-    }
     if (getChannelByName(channel) == NULL)
       break;
     if (getChannelByName(channel)->IsOP(client) == false) {
@@ -216,7 +213,12 @@ void Server::executeCommand(std::string command, std::string channel,
     }
     break;
   }
-  case 7: // QUIT
+  case 7:
+  {
+    SendInfos(channel, client);
+    break;
+  }
+  case 8: // QUIT
     ClearClients(client->GetFd());
   }
 }
@@ -290,7 +292,9 @@ int Server::GetCommand(std::string command) {
     return (5);
   if (command == "PART")
     return (6);
+  if (command == "WHO")
+    return(7);
   if (command == "QUIT")
-    return (7);
+    return (8);
   return (-1);
 }

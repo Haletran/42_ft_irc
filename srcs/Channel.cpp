@@ -3,6 +3,10 @@
 Channel::Channel() : _channel_name("#general"),  _topic("Nothing particular"), _invite_only(false), _password(NULL), _user_limit(std::numeric_limits<int>::max())
 {
     this->_topic_change = true;
+    std::stringstream ss;
+    std::time_t current_time = std::time(0);
+    ss << current_time;
+    this->time_created = ss.str();
 }
 
 Channel::Channel(std::string channel_name)
@@ -20,6 +24,10 @@ Channel::Channel(std::string channel_name)
 		password_needed = false;
 		_topic_change = true;
 		_user_limit = std::numeric_limits<int>::max();
+        std::stringstream ss;
+        std::time_t current_time = std::time(0);
+        ss << current_time;
+        this->time_created = ss.str();
     }
 }
 
@@ -75,6 +83,12 @@ bool Channel::getInvite()
     return(_invite_only);
 }
 
+std::string Channel::getTimeCreated()
+{
+    return (time_created);
+}
+
+
 bool Channel::operator==(const std::string &other) const
 {
         return _channel_name == other;
@@ -117,6 +131,7 @@ int Channel::getlimit()
     return (_user_limit);
 
 }
+
 
 void Channel::addOperators(Client *client)
 {

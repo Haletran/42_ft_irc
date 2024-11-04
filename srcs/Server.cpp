@@ -300,8 +300,11 @@ void Server::SendInfos(const std::string &channel_name, Client *client)
     std::string trimmed_channel_name = trimNewline(channel_name);
     Channel* channel = getChannelByName(trimmed_channel_name);
 
+    // fix : do not send the message a second time when rejoining the channel
     client->SendMsg(MODE_JOIN);
     client->SendMsg(FLAG_MSG);
+    client->SendMsg(CREATION_TIME);
+    // send who list of user
 }
 
 

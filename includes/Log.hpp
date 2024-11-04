@@ -3,6 +3,7 @@
 #define MODE_MESSAGE ":" + client->GetNick() + "!~" + client->GetUsername() + "@localhost MODE " + channel + " " + parameters + "\r\n"
 #define FLAG_MSG ":localhost 324 " + client->getNickname() + " " + channel->GetChannelName() + " +" + channel->getFlag() + "\r\n"
 #define MODE_JOIN ":localhost MODE " + channel->GetChannelName() + " +" + channel->getFlag() + "\r\n"
+#define CREATION_TIME ":localhost 329 " + client->getNickname() + " " + channel_name  + " " + getChannelByName(channel_name)->getTimeCreated() + "\r\n"
 #define SET_TOPIC ":" + client->GetNick() + "!" + client->GetUsername() + "@localhost TOPIC " + channel + " :" + parameters + "\r\n"
 #define EMPTY_TOPIC ":localhost 331 " + client->GetNick() + " " + channel + " :No topic is set\r\n"
 #define TOPIC_ERROR ":localhost 332 " + client->GetNick() + " " + channel + " :" + currentTopic + "\r\n"

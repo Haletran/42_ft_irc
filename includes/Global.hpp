@@ -16,6 +16,7 @@
 #include <cstdlib>
 #include <cerrno>
 #include <limits>
+#include <ctime>
 #include "Client.hpp"
 #include "Server.hpp"
 #include "Channel.hpp"
