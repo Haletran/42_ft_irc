@@ -98,41 +98,41 @@ void Server::executeCommand(std::string command, std::string channel,
   }
   case 4: // TOPIC
   {
-      Channel *chan = getChannelByName(channel);
-      if (chan->getTopicChange() == false && chan->IsOP(client)) {
-          if (parameters.empty()) {
-            std::string currentTopic = getChannelByName(channel)->getTopic();
-            if (currentTopic.empty()) {
-              client->SendMsg(EMPTY_TOPIC);
-            } else {
-              client->SendMsg(TOPIC_ERROR);
-            }
-          } else {
-            getChannelByName(channel)->setTopic(parameters);
-            for (std::vector<Client *>::iterator it =
-                     _channels[getChannelByName(channel)].begin();
-                 it != _channels[getChannelByName(channel)].end(); ++it)
-              (*it)->SendMsg(SET_TOPIC);
-          }
-      } else if (chan->getTopicChange() == true) {
-          if (parameters.empty()) {
-            std::string currentTopic = getChannelByName(channel)->getTopic();
-            if (currentTopic.empty()) {
-              client->SendMsg(EMPTY_TOPIC);
-            } else {
-              client->SendMsg(TOPIC_ERROR);
-            }
-          } else {
-            getChannelByName(channel)->setTopic(parameters);
-            for (std::vector<Client *>::iterator it =
-                     _channels[getChannelByName(channel)].begin();
-                 it != _channels[getChannelByName(channel)].end(); ++it)
-              (*it)->SendMsg(SET_TOPIC);
-          }
+    Channel *chan = getChannelByName(channel);
+    if (chan->getTopicChange() == false && chan->IsOP(client)) {
+      if (parameters.empty()) {
+        std::string currentTopic = getChannelByName(channel)->getTopic();
+        if (currentTopic.empty()) {
+          client->SendMsg(EMPTY_TOPIC);
+        } else {
+          client->SendMsg(TOPIC_ERROR);
+        }
       } else {
-          client->SendMsg(NOT_OP);
+        getChannelByName(channel)->setTopic(parameters);
+        for (std::vector<Client *>::iterator it =
+                 _channels[getChannelByName(channel)].begin();
+             it != _channels[getChannelByName(channel)].end(); ++it)
+          (*it)->SendMsg(SET_TOPIC);
       }
-      break;
+    } else if (chan->getTopicChange() == true) {
+      if (parameters.empty()) {
+        std::string currentTopic = getChannelByName(channel)->getTopic();
+        if (currentTopic.empty()) {
+          client->SendMsg(EMPTY_TOPIC);
+        } else {
+          client->SendMsg(TOPIC_ERROR);
+        }
+      } else {
+        getChannelByName(channel)->setTopic(parameters);
+        for (std::vector<Client *>::iterator it =
+                 _channels[getChannelByName(channel)].begin();
+             it != _channels[getChannelByName(channel)].end(); ++it)
+          (*it)->SendMsg(SET_TOPIC);
+      }
+    } else {
+      client->SendMsg(NOT_OP);
+    }
+    break;
   }
   case 5: // MODE
   {
@@ -206,7 +206,20 @@ void Server::executeCommand(std::string command, std::string channel,
       (*it)->SendMsg(MODE_MESSAGE);
     break;
   }
-  case 6:
+  case 6: // PART
+  {
+    std::string part = ":" + client->GetUsername() + "!~" +
+                       client->getNickname() + "@localhost PART " + channel +
+                       "\r\n";
+    for (std::vector<Client *>::iterator it =
+             _channels[getChannelByName(channel)].begin();
+         it != _channels[getChannelByName(channel)].end(); ++it) {
+      if ((*it) != client)
+        (*it)->SendMsg(part);
+    }
+    break;
+  }
+  case 7: // QUIT
     ClearClients(client->GetFd());
   }
 }
@@ -278,7 +291,9 @@ int Server::GetCommand(std::string command) {
     return (4);
   if (command == "MODE")
     return (5);
-  if (command == "QUIT")
+  if (command == "PART")
     return (6);
+  if (command == "QUIT")
+    return (7);
   return (-1);
 }
