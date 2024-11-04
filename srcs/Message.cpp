@@ -65,7 +65,6 @@ void Server::executeCommand(std::string command, std::string channel,
     if (channel[channel.length() - 1] == '\n')
       channel = channel.substr(0, channel.length() - 1);
     JoinChannel(channel, client, parameters);
-    SendInfos(channel, client);
     break;
   case 1: // INVITE
   {
@@ -140,7 +139,10 @@ void Server::executeCommand(std::string command, std::string channel,
     std::string mode_array = "itkl";
     int flag = -1;
     if (parameters.empty())
-      break;
+    {
+        SendInfos(channel, client);
+        break;
+    }
     if (getChannelByName(channel) == NULL)
       break;
     if (getChannelByName(channel)->IsOP(client) == false) {
