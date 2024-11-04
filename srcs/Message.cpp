@@ -211,6 +211,8 @@ void Server::executeCommand(std::string command, std::string channel,
     std::string part = ":" + client->GetUsername() + "!~" +
                        client->getNickname() + "@localhost PART " + channel +
                        "\r\n";
+    // check if there is any user left in the channel if not then delete the channel
+    // might need to delete the user of the channel if he leaves idk
     for (std::vector<Client *>::iterator it =
              _channels[getChannelByName(channel)].begin();
          it != _channels[getChannelByName(channel)].end(); ++it) {
