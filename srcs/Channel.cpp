@@ -83,13 +83,17 @@ bool Channel::operator==(const std::string &other) const
 std::string Channel::getFlag()
 {
     std::string backup;
-    int i = 0;
+    backup += 'C';
+    backup += 'n';
+    backup += 's';
     if (getInvite() == true)
-        backup[i++] = 'i';
+        backup += 'i';
     if (!_password.empty())
-        backup[i++] = 'k';
+        backup += 'k';
     if (_user_limit != std::numeric_limits<int>::max())
-        backup[i++] = 'l';
+        backup += 'l';
+    if (_topic_change == false)
+        backup += 't';
     return (backup);
 }
 

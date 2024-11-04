@@ -65,6 +65,7 @@ void Server::executeCommand(std::string command, std::string channel,
     if (channel[channel.length() - 1] == '\n')
       channel = channel.substr(0, channel.length() - 1);
     JoinChannel(channel, client, parameters);
+    SendInfos(channel, client);
     break;
   case 1: // INVITE
   {
@@ -190,15 +191,7 @@ void Server::executeCommand(std::string command, std::string channel,
             std::numeric_limits<int>::max());
         break;
       }
-    } else if (channel.at(0) == '#') {
-      std::string flag = getChannelByName(channel)->getFlag();
-      if (!flag.empty()) {
-        for (std::vector<Client *>::iterator it =
-                 _channels[getChannelByName(channel)].begin();
-             it != _channels[getChannelByName(channel)].end(); ++it)
-          (*it)->SendMsg(FLAG_MSG);
-      }
-      return;
+      // this is not working it's for MODE command that hexchat send when JOIN a channel
     }
     for (std::vector<Client *>::iterator it =
              _channels[getChannelByName(channel)].begin();
@@ -211,7 +204,7 @@ void Server::executeCommand(std::string command, std::string channel,
     std::string part = ":" + client->GetUsername() + "!~" +
                        client->getNickname() + "@localhost PART " + channel +
                        "\r\n";
-    // check if there is any user left in the channel if not then delete the channel
+    // check if re is any user left hannel if not then delete the channel
     // might need to delete the user of the channel if he leaves idk
     for (std::vector<Client *>::iterator it =
              _channels[getChannelByName(channel)].begin();

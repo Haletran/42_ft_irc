@@ -281,8 +281,6 @@ void Server::JoinChannel(const std::string &channel_name, Client *client, std::s
             _channels[channel].push_back(client);
             channel->addOperators(client);
             client->SendMsg(JOIN_MSG);
-            client->SendMsg(NEW_CHANNEL_MSG);
-            client->SendMsg(END_OF_NAMES_MSG);
         }
         catch (Channel::ChannelException &e)
         {
@@ -293,6 +291,18 @@ void Server::JoinChannel(const std::string &channel_name, Client *client, std::s
         }
     }
 }
+
+void Server::SendInfos(const std::string &channel_name, Client *client)
+{
+    std::string trimmed_channel_name = trimNewline(channel_name);
+    Channel* channel = getChannelByName(trimmed_channel_name);
+
+    client->SendMsg(NEW_CHANNEL_MSG);
+    client->SendMsg(END_OF_NAMES_MSG);
+    client->SendMsg(MODE_JOIN);
+    client->SendMsg(FLAG_MSG);
+}
+
 
 
 void Server::LeaveChannel(const std::string &channel_name, Client *client)

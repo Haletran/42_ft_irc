@@ -1,7 +1,8 @@
 #pragma once
 
 #define MODE_MESSAGE ":" + client->GetNick() + "!~" + client->GetUsername() + "@localhost MODE " + channel + " " + parameters + "\r\n"
-#define FLAG_MSG ":localhost " + client->getNickname() + channel + " +" + flag + "\r\n"
+#define FLAG_MSG ":localhost 324 " + client->getNickname() + " " + channel->GetChannelName() + " +" + channel->getFlag() + "\r\n"
+#define MODE_JOIN ":localhost MODE " + channel->GetChannelName() + " +" + channel->getFlag() + "\r\n"
 #define SET_TOPIC ":" + client->GetNick() + "!" + client->GetUsername() + "@localhost TOPIC " + channel + " :" + parameters + "\r\n"
 #define EMPTY_TOPIC ":localhost 331 " + client->GetNick() + " " + channel + " :No topic is set\r\n"
 #define TOPIC_ERROR ":localhost 332 " + client->GetNick() + " " + channel + " :" + currentTopic + "\r\n"
@@ -19,7 +20,7 @@
 #define BAD_KEY_ERROR ":localhost 475 " + client->GetNick() + " " + trimmed_channel_name + " :Cannot join channel (+k) - bad key\r\n"
 #define CHANNEL_FULL_ERROR ":localhost 471 " + client->GetNick() + " " + trimmed_channel_name + " :Cannot join channel (+l) - channel is full, try again later\r\n"
 #define CHANNEL_NAME_ERROR ":localhost 403 * " + channel_name + " :Channel name must start with '#'\r\n"
-#define RECEIVE_DEBUG "\033[31m<<\033[0m " << client->GetFd() << " # " + channel + " " + command + " " + trimNewline(parameters)
+#define RECEIVE_DEBUG "\033[31m<<\033[0m " << client->GetFd() << " " + channel + " " + command + " " + trimNewline(parameters)
 #define NEW_CHANNEL_MSG ":localhost 353 " + client->getNickname() + " = " + channel->GetChannelName() + " :@" + client->getNickname() + "\r\n"
 #define LIST_USER ":localhost 353 " + client->getNickname() + " = " + _channel_name + " :" + array_op + " " + array_user + "\r\n"
 #define NOT_OP ":localhost 482 " + client->getNickname() + " " + getChannelByName(channel)->GetChannelName() + " :You're not a channel operator\r\n"

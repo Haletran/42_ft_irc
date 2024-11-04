@@ -29,6 +29,7 @@ class Server
 		void CreateChannel(const std::string &channel, Client *client);
 		void JoinChannel(const std::string &channel, Client *client, std::string parameters);
 		void LeaveChannel(const std::string &channel, Client *client);
+		void SendInfos(const std::string &channel_name, Client *client);
 		Channel *getChannelByName(const std::string &channel);
 		void SendMessageToChannel(const std::string& channel_name, Client* sender, const std::string& message);
 		void executeCommand(std::string command, std::string channel, Client *client, std::string parameters, std::string msg);
