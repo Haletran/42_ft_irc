@@ -28,6 +28,7 @@ class Server
 		void AuthenticateClient(int fd, std::string buffer);
 		void CreateChannel(const std::string &channel, Client *client);
 		void JoinChannel(const std::string &channel, Client *client, std::string parameters);
+		void SendMessageToSomeone(Client *client, std::string msg_content, std::string nickname);
 		void LeaveChannel(const std::string &channel, Client *client);
 		void SendInfos(const std::string &channel_name, Client *client);
 		Channel *getChannelByName(const std::string &channel);

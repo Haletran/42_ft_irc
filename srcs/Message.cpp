@@ -3,15 +3,18 @@
 #include <exception>
 #include <sstream>
 
-std::string parseChannelName(const std::string &line) {
+std::string parseChannelName(const std::string &line)
+{
   const std::string prefix = "PRIVMSG ";
-  if (line.find(prefix) != 0) {
+  if (line.find(prefix) != 0)
+  {
     std::cerr << "Invalid message format" << std::endl;
     return "";
   }
   std::string rest = line.substr(prefix.length());
   size_t space_pos = rest.find(' ');
-  if (space_pos == std::string::npos) {
+  if (space_pos == std::string::npos)
+  {
     std::cerr << "Invalid message format" << std::endl;
     return "";
   }
@@ -20,36 +23,46 @@ std::string parseChannelName(const std::string &line) {
 }
 
 bool parseMessage(const std::string &msg, std::string &command,
-                  std::string &channel, std::string &parameters) {
+                  std::string &channel, std::string &parameters)
+{
   std::istringstream stream(msg);
-  if (!(stream >> command)) {
+  if (!(stream >> command))
+  {
     return false;
   }
-  if (!(stream >> channel)) {
+  if (!(stream >> channel))
+  {
     return false;
   }
-  if (channel.find_first_of("\r\n") != std::string::npos) {
+  if (channel.find_first_of("\r\n") != std::string::npos)
+  {
     channel = trimNewline(channel);
   }
-  if (channel.find("\n") != std::string::npos) {
+  if (channel.find("\n") != std::string::npos)
+  {
     channel = channel.substr(0, channel.length() - 1);
   }
   std::getline(stream, parameters);
-  if (!parameters.empty() && parameters[0] == ' ') {
+  if (!parameters.empty() && parameters[0] == ' ')
+  {
     parameters.erase(0, 1);
   }
-  if (parameters.find_first_not_of(" \r\n") == std::string::npos) {
+  if (parameters.find_first_not_of(" \r\n") == std::string::npos)
+  {
     parameters.clear();
   }
-  if (parameters[0] == ':') {
+  if (parameters[0] == ':')
+  {
     parameters.erase(0, 1);
   }
   return true;
 }
 
-void Server::ProcedeCommand(const std::string &msg, Client *client) {
+void Server::ProcedeCommand(const std::string &msg, Client *client)
+{
   std::string command, channel, parameters;
-  if (!parseMessage(msg, command, channel, parameters)) {
+  if (!parseMessage(msg, command, channel, parameters))
+  {
     std::cerr << "Invalid message format" << std::endl;
     return;
   }
@@ -59,8 +72,10 @@ void Server::ProcedeCommand(const std::string &msg, Client *client) {
 
 void Server::executeCommand(std::string command, std::string channel,
                             Client *client, std::string parameters,
-                            std::string msg) {
-  switch (GetCommand(command)) {
+                            std::string msg)
+{
+  switch (GetCommand(command))
+  {
   case 0: // JOIN
     if (channel[channel.length() - 1] == '\n')
       channel = channel.substr(0, channel.length() - 1);
@@ -70,12 +85,16 @@ void Server::executeCommand(std::string command, std::string channel,
   {
     Client *test = get_ClientByUsername(channel);
     Channel *channel_instance = getCurrentChannel(client);
-    if (!test) {
+    if (!test)
+    {
       client->SendMsg(INVITE_USER_ERROR);
-    } else if (channel_instance->isAlreadyConnected(test) == false) {
+    }
+    else if (channel_instance->isAlreadyConnected(test) == false)
+    {
       client->SendMsg(INVITE_SUCCESS_MSG);
       test->SendMsg(INVITE_MSG_NEW);
-      if (channel_instance == NULL) {
+      if (channel_instance == NULL)
+      {
         std::cerr << "Channel is NULL" << std::endl;
         break;
       }
@@ -93,43 +112,63 @@ void Server::executeCommand(std::string command, std::string channel,
   {
     std::string channel = parseChannelName(msg);
     std::string msg_content = msg.substr(msg.find(":", 1) + 1);
-    SendMessageToChannel(channel, client, msg_content);
+    if (getChannelByName(channel) != NULL)
+      SendMessageToChannel(channel, client, msg_content);
+    else
+      SendMessageToSomeone(client, msg_content, channel);
     break;
   }
   case 4: // TOPIC
   {
     Channel *chan = getChannelByName(channel);
-    if (chan->getTopicChange() == false && chan->IsOP(client)) {
-      if (parameters.empty()) {
+    if (chan->getTopicChange() == false && chan->IsOP(client))
+    {
+      if (parameters.empty())
+      {
         std::string currentTopic = getChannelByName(channel)->getTopic();
-        if (currentTopic.empty()) {
+        if (currentTopic.empty())
+        {
           client->SendMsg(EMPTY_TOPIC);
-        } else {
+        }
+        else
+        {
           client->SendMsg(TOPIC_ERROR);
         }
-      } else {
+      }
+      else
+      {
         getChannelByName(channel)->setTopic(parameters);
         for (std::vector<Client *>::iterator it =
                  _channels[getChannelByName(channel)].begin();
              it != _channels[getChannelByName(channel)].end(); ++it)
           (*it)->SendMsg(SET_TOPIC);
       }
-    } else if (chan->getTopicChange() == true) {
-      if (parameters.empty()) {
+    }
+    else if (chan->getTopicChange() == true)
+    {
+      if (parameters.empty())
+      {
         std::string currentTopic = getChannelByName(channel)->getTopic();
-        if (currentTopic.empty()) {
+        if (currentTopic.empty())
+        {
           client->SendMsg(EMPTY_TOPIC);
-        } else {
+        }
+        else
+        {
           client->SendMsg(TOPIC_ERROR);
         }
-      } else {
+      }
+      else
+      {
         getChannelByName(channel)->setTopic(parameters);
         for (std::vector<Client *>::iterator it =
                  _channels[getChannelByName(channel)].begin();
              it != _channels[getChannelByName(channel)].end(); ++it)
           (*it)->SendMsg(SET_TOPIC);
       }
-    } else {
+    }
+    else
+    {
       client->SendMsg(NOT_OP);
     }
     break;
@@ -139,23 +178,29 @@ void Server::executeCommand(std::string command, std::string channel,
     std::string mode_array = "itkl";
     int flag = -1;
     if (parameters.empty())
-        break;
+      break;
     if (getChannelByName(channel) == NULL)
       break;
-    if (getChannelByName(channel)->IsOP(client) == false) {
+    if (getChannelByName(channel)->IsOP(client) == false)
+    {
       client->SendMsg(NOT_OP);
       break;
     }
-    if (!parameters.empty()) {
-      for (size_t i = 0; i < mode_array.size(); i++) {
-        if (parameters[1] == mode_array[i]) {
+    if (!parameters.empty())
+    {
+      for (size_t i = 0; i < mode_array.size(); i++)
+      {
+        if (parameters[1] == mode_array[i])
+        {
           flag = i;
           break;
         }
       }
     }
-    if (parameters.size() > 1 && parameters.at(0) == '+') {
-      switch (flag) {
+    if (parameters.size() > 1 && parameters.at(0) == '+')
+    {
+      switch (flag)
+      {
       case 0:
         getChannelByName(channel)->setInviteOnly(true);
         break;
@@ -171,8 +216,11 @@ void Server::executeCommand(std::string command, std::string channel,
             atoi(parameters.substr(3).c_str()));
         break;
       }
-    } else if (parameters.size() > 1 && parameters.at(0) == '-') {
-      switch (flag) {
+    }
+    else if (parameters.size() > 1 && parameters.at(0) == '-')
+    {
+      switch (flag)
+      {
       case 0:
         getChannelByName(channel)->setInviteOnly(false);
         break;
@@ -207,7 +255,8 @@ void Server::executeCommand(std::string command, std::string channel,
     // might need to delete the user of the channel if he leaves idk
     for (std::vector<Client *>::iterator it =
              _channels[getChannelByName(channel)].begin();
-         it != _channels[getChannelByName(channel)].end(); ++it) {
+         it != _channels[getChannelByName(channel)].end(); ++it)
+    {
       if ((*it) != client)
         (*it)->SendMsg(part);
     }
@@ -223,51 +272,77 @@ void Server::executeCommand(std::string command, std::string channel,
   }
 }
 
-void Server::ProcedeMessage(const std::string &msg, Client *client) {
+void Server::ProcedeMessage(const std::string &msg, Client *client)
+{
   std::string channel;
   std::string message;
   std::istringstream stream(msg);
   std::string line;
-  while (std::getline(stream, line)) {
+  while (std::getline(stream, line))
+  {
     ProcedeCommand(line, client);
   }
 }
 
-std::string trimNewline(const std::string &str) {
+std::string trimNewline(const std::string &str)
+{
   size_t end = str.find_last_not_of("\r\n ");
   return (end == std::string::npos) ? "" : str.substr(0, end + 1);
 }
 
 void Server::SendMessageToChannel(const std::string &channel_name,
-                                  Client *sender, const std::string &message) {
+                                  Client *sender, const std::string &message)
+{
   Channel *channel = getChannelByName(channel_name);
-  if (channel == NULL) {
+  if (channel == NULL)
+  {
     std::string errorMsg = "Channel " + channel_name + " does not exist.\r\n";
     sender->SendMsg(errorMsg);
     return;
   }
   for (std::vector<Client *>::iterator it = _channels[channel].begin();
-       it != _channels[channel].end(); ++it) {
-    if (*it != sender) {
+       it != _channels[channel].end(); ++it)
+  {
+    if (*it != sender)
+    {
       (*it)->SendMsg(FORMATTED_MESSAGE);
     }
   }
 }
 
+void Server::SendMessageToSomeone(Client *client, std::string msg_content, std::string nickname)
+{
+  std::string msg = ":" + client->GetUsername() + "!~" + client->getNickname() + "@localhost PRIVMSG " + nickname + " :" + msg_content + "\r\n";
+  for (std::vector<Client *>::iterator it = _clients.begin(); it != _clients.end(); ++it)
+  {
+    if ((*it)->getNickname() == nickname)
+    {
+      (*it)->SendMsg(msg);
+      return;
+    }
+  }
+  client->SendMsg("User " + nickname + " not found.\r\n");
+}
+
 void Server::KickFromChannel(const std::string &channel,
-                             const std::string &nickname, Client *client) {
+                             const std::string &nickname, Client *client)
+{
   std::string nick = trimNewline(nickname);
   Channel *channelPtr = getChannelByName(channel);
-  if (channelPtr == NULL) {
+  if (channelPtr == NULL)
+  {
     client->SendMsg(CHANNEL_NOT_FOUND);
     return;
   }
   std::vector<Client *> &clientsInChannel = _channels[channelPtr];
   for (std::vector<Client *>::iterator clientIt = clientsInChannel.begin();
-       clientIt != clientsInChannel.end(); ++clientIt) {
-    if ((*clientIt)->GetNick() == nick) {
+       clientIt != clientsInChannel.end(); ++clientIt)
+  {
+    if ((*clientIt)->GetNick() == nick)
+    {
       for (std::vector<Client *>::iterator notifyIt = clientsInChannel.begin();
-           notifyIt != clientsInChannel.end(); ++notifyIt) {
+           notifyIt != clientsInChannel.end(); ++notifyIt)
+      {
         (*notifyIt)->SendMsg(KICK_MSG);
       }
       LeaveChannel(channel, *clientIt);
@@ -277,7 +352,8 @@ void Server::KickFromChannel(const std::string &channel,
   client->SendMsg(USER_NOT_ON_CHANNEL);
 }
 
-int Server::GetCommand(std::string command) {
+int Server::GetCommand(std::string command)
+{
   if (command == "JOIN")
     return (0);
   if (command == "INVITE")
@@ -293,7 +369,7 @@ int Server::GetCommand(std::string command) {
   if (command == "PART")
     return (6);
   if (command == "WHO")
-    return(7);
+    return (7);
   if (command == "QUIT")
     return (8);
   return (-1);

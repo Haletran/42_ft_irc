@@ -204,6 +204,7 @@ bool Channel::isAlreadyConnected(Client *client)
     return false;
 }
 
+
 Channel::~Channel()
 {
 }
