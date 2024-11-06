@@ -48,4 +48,3 @@ class Server
 		void printtabclient_fd(std::vector<Client> _clients);
 };
 
-std::string trimNewline(const std::string &str);

@@ -34,7 +34,6 @@ bool Bot::connect_to_server() {
 }
 
 void Bot::login() {
-    // Send NICK and USER commands to log in to the server
     send_message("PASS " + password);
     send_message("NICK " + nickname);
     send_message("USER " + nickname + " 0 * :" + nickname);

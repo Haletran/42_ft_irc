@@ -18,7 +18,7 @@ private:
     std::string channel;
     std::string password;
     bool send_message(const std::string& message);
-
+    bool isStarted;
 public:
     Bot(const std::string& server, int port, const std::string& nick, const std::string& chan, const std::string& password)
         : sockfd(-1), server_ip(server), port(port), nickname(nick),  channel(chan), password(password) {}

@@ -24,6 +24,11 @@
 #include "../includes/Log.hpp"
 #include <algorithm>
 
+std::string trimNewline(const std::string &str);
+bool parseMessage(const std::string &msg, std::string &command,
+                  std::string &channel, std::string &parameters);
+std::string parseChannelName(const std::string &line);
+
 // colors
 #define RED "\033[1;31m"
 #define GREEN "\033[1;32m"
