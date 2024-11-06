@@ -20,8 +20,9 @@
 #include "Client.hpp"
 #include "Server.hpp"
 #include "Channel.hpp"
+#include "Bot.hpp"
 #include "../includes/Log.hpp"
-
+#include <algorithm>
 
 // colors
 #define RED "\033[1;31m"

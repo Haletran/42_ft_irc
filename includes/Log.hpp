@@ -26,5 +26,5 @@
 #define LIST_USER ":localhost 353 " + client->getNickname() + " = " + _channel_name + " :" + array_op + " " + array_user + "\r\n"
 #define NOT_OP ":localhost 482 " + client->getNickname() + " " + getChannelByName(channel)->GetChannelName() + " :You're not a channel operator\r\n"
 #define END_OF_NAMES_MSG ":localhost 366 " + client->getNickname() + " " + channel->GetChannelName() + " :End of /NAMES list.\r\n"
-#define SEND_DEBUG "\033[32m>>\033[0m " << _fd << trimNewline(msg)
+#define SEND_DEBUG "\033[32m>>\033[0m " << _fd << " " << trimNewline(msg)
 #define OPERATOR_ERROR "Impossible to add client to list of operators"

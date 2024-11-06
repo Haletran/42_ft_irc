@@ -268,7 +268,22 @@ void Server::executeCommand(std::string command, std::string channel,
     break;
   }
   case 8: // QUIT
+  {
     ClearClients(client->GetFd());
+    break;
+  }
+  // case 9: // BOT
+  // {
+  //     // parameters = options (ping)
+  //     // channel = username
+  //     Bot *bot_user = new Bot();
+  //     std::string nick = client->GetNick();
+  //     if (bot_user->isRight(trimNewline(parameters)))
+  //       SendMessageToSomeone(client, "[BOT] Correct answer!", channel);
+  //     else
+  //       SendMessageToSomeone(client, "[BOT] Incorrect answer. Try again!", channel);
+  //     delete bot_user;
+  // }
   }
 }
 
@@ -372,5 +387,7 @@ int Server::GetCommand(std::string command)
     return (7);
   if (command == "QUIT")
     return (8);
+  if (command == "bot" || command == "BOT")
+    return (9);
   return (-1);
 }
