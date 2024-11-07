@@ -49,8 +49,8 @@ void Bot::login() {
     send_message("JOIN " + channel);
 }
 
-void Bot::badApple() {
-    std::ifstream file("srcs/script.txt");
+void Bot::printFile(std::string filename) {
+    std::ifstream file(filename.c_str());
     if (!file.is_open()) {
         std::cerr << "Error: Unable to open script file" << std::endl;
         return;
@@ -82,11 +82,15 @@ void Bot::receive_messages() {
         std::cout << message;
 
         if (message.find("!help") != std::string::npos)
-            send_message("PRIVMSG " + channel + " :Here are the commands: !help, !ping, !bad-apple");
+            send_message("PRIVMSG " + channel + " :Here are the commands: !help, !ping, !shrek, !aduriez, !hbelle");
         if (message.find("!ping") != std::string::npos)
             send_message("PRIVMSG " + channel + " :PONG");
-        if (message.find("!bad-apple") != std::string::npos)
-            badApple();
+        if (message.find("!hbelle") != std::string::npos)
+            printFile("includes/hbelle");
+        if (message.find("!aduriez") != std::string::npos)
+                printFile("includes/Aduriez");
+        if (message.find("!shrek") != std::string::npos)
+            printFile("includes/Shrek");
     }
 }
 

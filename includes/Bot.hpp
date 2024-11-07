@@ -27,6 +27,6 @@ class Bot {
         void join_channel();
         void receive_messages();
         void disconnect();
-        void badApple();
+        void printFile(std::string filename);
         void sendFormattedBlock(const std::string& message);
 };
