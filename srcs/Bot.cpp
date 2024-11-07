@@ -1,4 +1,12 @@
 #include "../includes/Global.hpp"
+#include <csignal>
+#include <fstream>
+
+Bot::Bot(const std::string& server, int port, const std::string& nick, const std::string& chan, const std::string& password) : sockfd(-1), server_ip(server), port(port), nickname(nick),  channel(chan), password(password) {}
+
+Bot::~Bot() {
+    disconnect();
+}
 
 bool Bot::send_message(const std::string& message) {
     std::string msg = message + "\r\n";
@@ -41,6 +49,28 @@ void Bot::login() {
     send_message("JOIN " + channel);
 }
 
+void Bot::badApple() {
+    std::ifstream file("srcs/script.txt");
+    if (!file.is_open()) {
+        std::cerr << "Error: Unable to open script file" << std::endl;
+        return;
+    }
+    std::string line;
+    int lineCount = 0;
+    while (std::getline(file, line)) {
+        if (!line.empty())
+        {
+            lineCount++;
+            if (!send_message("PRIVMSG " + channel + " :" + line)) {
+                std::cerr << "Error: Unable to send message at line " << lineCount << std::endl;
+                break;
+            }
+        }
+        usleep(10000);
+    }
+}
+
+
 void Bot::receive_messages() {
     char buffer[512];
     while (true) {
@@ -51,9 +81,12 @@ void Bot::receive_messages() {
         std::string message(buffer);
         std::cout << message;
 
-        if (message.find("PING") != std::string::npos) {
+        if (message.find("!help") != std::string::npos)
+            send_message("PRIVMSG " + channel + " :Here are the commands: !help, !ping, !bad-apple");
+        if (message.find("!ping") != std::string::npos)
             send_message("PRIVMSG " + channel + " :PONG");
-        }
+        if (message.find("!bad-apple") != std::string::npos)
+            badApple();
     }
 }
 
@@ -65,11 +98,8 @@ void Bot::disconnect() {
     }
 }
 
-Bot::~Bot() {
-    disconnect();
-}
-
 int main() {
+    signal(SIGPIPE, SIG_IGN);
     std::string server = "localhost";
     int port = 6666;
     std::string nickname = "BOT";

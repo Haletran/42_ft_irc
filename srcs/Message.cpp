@@ -1,7 +1,4 @@
 #include "../includes/Global.hpp"
-#include <cstdlib>
-#include <exception>
-#include <sstream>
 
 void Server::ProcedeCommand(const std::string &msg, Client *client)
 {
