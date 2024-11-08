@@ -38,6 +38,7 @@ class Server
 		//std::vector<std::string> GetMessagesFromChannel(const std::string &channel); //todo
 		std::vector<Client*> GetClientsFromChannel(const std::string &channel); //todo
 		void SendPrivateMessage(const std::string &nick, const std::string &msg, Client *client); //todo
+		Client *get_ClientByNickname(std::string username);
 		void ProcedeMessage(const std::string &msg, Client *client);
 		void ProcedeCommand(const std::string &msg, Client *client);
 		void KickFromChannel(const std::string &nick, const std::string &channel, Client *client);

@@ -117,7 +117,7 @@ void Server::executeCommand(std::string command, std::string channel,
   }
   case 5: // MODE
   {
-    std::string mode_array = "itkl";
+    std::string mode_array = "itklo";
     int flag = -1;
     if (parameters.empty())
       break;
@@ -157,6 +157,10 @@ void Server::executeCommand(std::string command, std::string channel,
         getChannelByName(channel)->setUserLimit(
             atoi(parameters.substr(3).c_str()));
         break;
+      case 4:
+        std::string clientUsername = parameters.substr(3);
+        getChannelByName(channel)->addOperators(get_ClientByNickname(clientUsername));
+        break;
       }
     }
     else if (parameters.size() > 1 && parameters.at(0) == '-')
@@ -178,6 +182,10 @@ void Server::executeCommand(std::string command, std::string channel,
       case 3:
         getChannelByName(channel)->setUserLimit(
             std::numeric_limits<int>::max());
+        break;
+      case 4:
+        std::string clientUsername = parameters.substr(3);
+        getChannelByName(channel)->removeOperator(get_ClientByNickname(clientUsername));
         break;
       }
       // this is not working it's for MODE command that hexchat send when JOIN a channel

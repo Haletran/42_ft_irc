@@ -378,6 +378,17 @@ Client *Server::get_ClientByUsername(std::string username)
     return NULL;
 }
 
+
+Client *Server::get_ClientByNickname(std::string username)
+{
+    for (size_t i = 0; i < _clients.size(); i++)
+    {
+        if (_clients[i]->GetNick() == username)
+            return _clients[i];
+    }
+    return NULL;
+}
+
 Channel *Server::getCurrentChannel(Client *client){
     for (std::map<Channel*, std::vector<Client*> >::iterator it = _channels.begin(); it != _channels.end(); ++it) {
         std::vector<Client*> clients = it->second;

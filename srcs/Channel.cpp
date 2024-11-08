@@ -89,6 +89,20 @@ std::string Channel::getTimeCreated()
 }
 
 
+void Channel::removeOperator(Client *client)
+{
+    if (!client)
+        throw std::runtime_error(OPERATOR_ERROR);
+    for (std::vector<Client*>::iterator it = _operators.begin(); it != _operators.end(); ++it)
+    {
+        if ((*it)->GetUsername() == client->GetUsername())
+        {
+            _operators.erase(it);
+            return;
+        }
+    }
+}
+
 bool Channel::operator==(const std::string &other) const
 {
         return _channel_name == other;

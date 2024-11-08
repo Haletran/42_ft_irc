@@ -47,6 +47,7 @@ void Bot::login() {
     send_message("USER " + nickname + " 0 * :" + nickname);
     sleep(1);
     send_message("JOIN " + channel);
+    //send_message("TOPIC " + channel + " :🎮 Welcome to the game Channel :) !");
 }
 
 void Bot::printFile(std::string filename) {
@@ -58,7 +59,6 @@ void Bot::printFile(std::string filename) {
     std::string line;
     int lineCount = 0;
     while (std::getline(file, line)) {
-        if (!line.empty())
         {
             lineCount++;
             if (!send_message("PRIVMSG " + channel + " :" + line)) {
@@ -66,7 +66,7 @@ void Bot::printFile(std::string filename) {
                 break;
             }
         }
-        usleep(10000);
+        usleep(8000);
     }
 }
 
@@ -82,15 +82,24 @@ void Bot::receive_messages() {
         std::cout << message;
 
         if (message.find("!help") != std::string::npos)
-            send_message("PRIVMSG " + channel + " :Here are the commands: !help, !ping, !shrek, !aduriez, !hbelle");
-        if (message.find("!ping") != std::string::npos)
+            send_message("PRIVMSG " + channel + " :Here are the commands: !help, !ping, !ascii");
+        else if (message.find("!ping") != std::string::npos)
             send_message("PRIVMSG " + channel + " :PONG");
-        if (message.find("!hbelle") != std::string::npos)
-            printFile("includes/hbelle");
-        if (message.find("!aduriez") != std::string::npos)
-                printFile("includes/Aduriez");
-        if (message.find("!shrek") != std::string::npos)
-            printFile("includes/Shrek");
+        else if (message.find("!ascii") != std::string::npos)
+        {
+            switch(rand() % 3)
+            {
+                case 0:
+                    printFile("includes/BotUtils/bapasqui");
+                    break;
+                case 1:
+                    printFile("includes/BotUtils/tim");
+                    break;
+                case 2:
+                    printFile("includes/BotUtils/Shrek");
+                    break;
+            }
+        }
     }
 }
 
@@ -104,6 +113,7 @@ void Bot::disconnect() {
 
 int main() {
     signal(SIGPIPE, SIG_IGN);
+    srand(time(0));
     std::string server = "localhost";
     int port = 6666;
     std::string nickname = "BOT";

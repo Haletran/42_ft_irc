@@ -45,6 +45,7 @@ class Channel : public Server
 		bool getPasswordNeeded();
 		int getNbUser() const;
 		int getlimit();
+		void removeOperator(Client *client);
 
 		class ChannelException : public std::exception
 		{
