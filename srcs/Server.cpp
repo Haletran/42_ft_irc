@@ -153,9 +153,15 @@ void Server::AuthenticateClient(int fd, std::string buffer)
 		{
 			std::string nick = line.substr(5);
 			nick = trimNewline(nick);
-			client->SetNick(nick);
-			std::string msg = "Nick set to " + nick + "\n";
-			send(fd, msg.c_str(), msg.length(), 0);
+			if (get_ClientByNickname(nick) != NULL)
+			{
+				std::string errorMsg = ":localhost  433 * " + nick + " :Nickname is already in use\r\n";
+				send(fd, errorMsg.c_str(), errorMsg.length(), 0);
+			}
+			else
+			{client->SetNick(nick);
+			std::string msg = ":localhost 001 " + nick + " :Welcome to the IRC server\r\n";
+			send(fd, msg.c_str(), msg.length(), 0);}
 		}
 		else if (line.find("USER ") == 0)
 		{
