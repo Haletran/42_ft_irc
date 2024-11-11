@@ -159,7 +159,10 @@ void Server::executeCommand(std::string command, std::string channel,
         break;
       case 4:
         std::string clientUsername = trimNewline(parameters.substr(3));
-        getChannelByName(channel)->addOperators(get_ClientByNickname(clientUsername));
+        if (get_ClientByNickname(clientUsername) != NULL)
+            getChannelByName(channel)->addOperators(get_ClientByNickname(clientUsername));
+        else
+            return ;
         break;
       }
     }
@@ -184,7 +187,10 @@ void Server::executeCommand(std::string command, std::string channel,
         break;
       case 4:
         std::string clientUsername = trimNewline(parameters.substr(3));
-        getChannelByName(channel)->removeOperator(get_ClientByNickname(clientUsername));
+        if (get_ClientByNickname(clientUsername) != NULL)
+            getChannelByName(channel)->removeOperator(get_ClientByNickname(clientUsername));
+        else
+            return ;
         break;
       }
       // this is not working it's for MODE command that hexchat send when JOIN a channel
@@ -200,7 +206,12 @@ void Server::executeCommand(std::string command, std::string channel,
     std::string part = ":" + client->GetUsername() + "!~" +
                        client->getNickname() + "@localhost PART " + channel +
                        "\r\n";
-    // check if re is any user left hannel if not then delete the channel
+    if (_channels[getChannelByName(channel)].size() == 1)
+    {
+      getChannelByName(channel)->CleanChannel();
+      _channels.erase(getChannelByName(channel));
+      break;
+    }
     // might need to delete the user of the channel if he leaves idk
     for (std::vector<Client *>::iterator it =
              _channels[getChannelByName(channel)].begin();
@@ -218,6 +229,7 @@ void Server::executeCommand(std::string command, std::string channel,
   }
   case 8: // QUIT
   {
+    close(client->GetFd());
     ClearClients(client->GetFd());
     break;
   }

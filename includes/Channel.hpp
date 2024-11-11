@@ -46,6 +46,7 @@ class Channel : public Server
 		int getNbUser() const;
 		int getlimit();
 		void removeOperator(Client *client);
+		void CleanChannel();
 
 		class ChannelException : public std::exception
 		{

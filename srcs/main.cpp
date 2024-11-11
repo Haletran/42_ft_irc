@@ -18,9 +18,9 @@ int main(int argc, char **argv)
 	}
 	catch(const std::exception& e)
 	{
-		server.CloseFds();
 		std::cerr << e.what() << '\n';
 	}
+	server.CleanServer();
 	std::cout << "Server closed" << std::endl;
 	return 0;
 }

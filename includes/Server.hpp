@@ -15,6 +15,7 @@ class Server
 		std::map<Channel*, std::vector<Client*> > _channels;
 	public :
 		Server();
+		~Server();
 		void ServerInit(int port, std::string pwd);
 		void SerSocket();
 		void AcceptClient();
@@ -45,7 +46,6 @@ class Server
 		int GetCommand(std::string command);
 		Client *get_ClientByUsername(std::string username);
 		Channel *getCurrentChannel(Client *client);
-		~Server();
+		void CleanServer();
 		void printtabclient_fd(std::vector<Client> _clients);
 };
-

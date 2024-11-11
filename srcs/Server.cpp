@@ -1,4 +1,5 @@
 #include "../includes/Global.hpp"
+#include <vector>
 
 bool Server::_signal = false;
 
@@ -25,6 +26,7 @@ void Server::ClearClients(int fd)
 	{
 		if (_clients[i]->GetFd() == fd)
 		{
+		    delete _clients[i];
 			_clients.erase(_clients.begin() + i);
 			break;
 		}
@@ -313,6 +315,29 @@ void Server::SendInfos(const std::string &channel_name, Client *client)
     // send who list of user
 }
 
+void Server::CleanServer()
+{
+    
+    for (std::vector<Client*>::iterator it = _clients.begin(); it != _clients.end(); ++it)
+    {
+        if ((*it)->GetFd() == -1)
+        {
+            delete *it;
+            _clients.erase(it);
+            break;
+        }
+    }
+    for (std::map<Channel*, std::vector<Client*> >::iterator it = _channels.begin(); it != _channels.end(); )
+    {
+        for (std::vector<Client*>::iterator clientIt = it->second.begin(); clientIt != it->second.end(); ++clientIt) {
+            delete *clientIt;
+        }
+        delete it->first;
+        _channels.erase(it);
+    }
+
+    _channels.clear();
+}
 
 
 void Server::LeaveChannel(const std::string &channel_name, Client *client)

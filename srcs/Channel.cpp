@@ -218,6 +218,13 @@ bool Channel::isAlreadyConnected(Client *client)
     return false;
 }
 
+void Channel::CleanChannel()
+{
+    _clients.clear();
+    _operators.clear();
+    _invited_clients.clear();
+}
+
 
 Channel::~Channel()
 {
