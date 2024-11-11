@@ -24,56 +24,48 @@ void Server::executeCommand(t_input *input)
   {
   case 0: // JOIN
     JoinCommand(input);
-    delete input;
     break;
   case 1: // INVITE
   {
     InviteCommand(input);
-    delete input;
     break;
   }
   case 2: // KICK
     KickCommand(input);
-    delete input;
     break;
   case 3: // PRIVMSG
   {
     MsgCommand(input);
-    delete input;
     break;
   }
   case 4: // TOPIC
   {
     TopicCommand(input);
-    delete input;
     break;
   }
   case 5: // MODE
   {
     ModeCommand(input);
-    delete input;
     break;
   }
   case 6: // PART
   {
     PartCommand(input);
-    delete input;
     break;
   }
   case 7:
   {
     SendInfos(input->channel, input->client);
-    delete input;
     break;
   }
   case 8: // QUIT
   {
     close(input->client->GetFd());
     ClearClients(input->client->GetFd());
-    delete input;
     break;
   }
   }
+  delete input;
 }
 
 void Server::ProcedeMessage(const std::string &msg, Client *client)
