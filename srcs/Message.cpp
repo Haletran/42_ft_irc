@@ -64,6 +64,9 @@ void Server::executeCommand(t_input *input)
     ClearClients(input->client->GetFd());
     break;
   }
+  default:
+    std::cerr << "Invalid command" << std::endl;
+    break;
   }
   delete input;
 }
