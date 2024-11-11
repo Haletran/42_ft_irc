@@ -34,7 +34,7 @@ class Server
 		void SendInfos(const std::string &channel_name, Client *client);
 		Channel *getChannelByName(const std::string &channel);
 		void SendMessageToChannel(const std::string& channel_name, Client* sender, const std::string& message);
-		void executeCommand(std::string command, std::string channel, Client *client, std::string parameters, std::string msg);
+		void executeCommand(t_input *input);
 		//void AddMessageToChannel(const std::string &channel, const std::string &msg);
 		//std::vector<std::string> GetMessagesFromChannel(const std::string &channel); //todo
 		std::vector<Client*> GetClientsFromChannel(const std::string &channel); //todo
@@ -48,4 +48,14 @@ class Server
 		Channel *getCurrentChannel(Client *client);
 		void CleanServer();
 		void printtabclient_fd(std::vector<Client> _clients);
+
+
+		// COMMAND
+		void JoinCommand(t_input *input);
+		void InviteCommand(t_input *input);
+		void KickCommand(t_input *input);
+		void MsgCommand(t_input *input);
+		void TopicCommand(t_input *input);
+		void ModeCommand(t_input *input);
+		void PartCommand(t_input *input);
 };

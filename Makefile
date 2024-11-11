@@ -8,6 +8,7 @@ SRCS = srcs/main.cpp \
 	srcs/Message.cpp \
 	srcs/Channel.cpp \
 	srcs/Utils.cpp \
+	srcs/Command.cpp \
 
 OBJ_DIR = obj
 OBJ = $(addprefix $(OBJ_DIR)/, $(SRCS:srcs/%.cpp=%.o))

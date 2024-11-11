@@ -18,6 +18,7 @@
 #include <limits>
 #include <ctime>
 #include "Client.hpp"
+#include "Typedef.hpp"
 #include "Server.hpp"
 #include "Channel.hpp"
 #include "Bot.hpp"
