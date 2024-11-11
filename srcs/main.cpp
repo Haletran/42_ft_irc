@@ -20,7 +20,6 @@ int main(int argc, char **argv)
 	{
 		std::cerr << e.what() << '\n';
 	}
-	server.CleanServer();
 	std::cout << "Server closed" << std::endl;
 	return 0;
 }

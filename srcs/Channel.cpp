@@ -218,14 +218,16 @@ bool Channel::isAlreadyConnected(Client *client)
     return false;
 }
 
-void Channel::CleanChannel()
+void Channel::CleanChannel(Channel *chan)
 {
-    _clients.clear();
-    _operators.clear();
-    _invited_clients.clear();
+    clearVector(chan->_operators);
+    clearVector(chan->_clients);
+    clearVector(chan->_invited_clients);
 }
 
 
 Channel::~Channel()
 {
+    CleanChannel(this);
+    std::cerr << "Channel " << _channel_name << " has been deleted" << std::endl;
 }

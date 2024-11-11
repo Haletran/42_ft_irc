@@ -208,8 +208,8 @@ void Server::executeCommand(std::string command, std::string channel,
                        "\r\n";
     if (_channels[getChannelByName(channel)].size() == 1)
     {
-      getChannelByName(channel)->CleanChannel();
-      _channels.erase(getChannelByName(channel));
+      //getChannelByName(channel)->CleanChannel(getChannelByName(channel));
+      //_channels.erase(getChannelByName(channel));
       break;
     }
     // might need to delete the user of the channel if he leaves idk

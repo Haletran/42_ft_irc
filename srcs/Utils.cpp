@@ -60,3 +60,10 @@ std::string parseChannelName(const std::string &line)
   std::string channel = rest.substr(0, space_pos);
   return channel;
 }
+
+void clearVector(std::vector<Client*>& vec) {
+    for (std::vector<Client*>::iterator it = vec.begin(); it != vec.end(); ) {
+        it = vec.erase(it);
+    }
+    vec.clear();
+}
