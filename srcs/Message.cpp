@@ -158,7 +158,7 @@ void Server::executeCommand(std::string command, std::string channel,
             atoi(parameters.substr(3).c_str()));
         break;
       case 4:
-        std::string clientUsername = parameters.substr(3);
+        std::string clientUsername = trimNewline(parameters.substr(3));
         getChannelByName(channel)->addOperators(get_ClientByNickname(clientUsername));
         break;
       }
@@ -180,11 +180,10 @@ void Server::executeCommand(std::string command, std::string channel,
           return;
         break;
       case 3:
-        getChannelByName(channel)->setUserLimit(
-            std::numeric_limits<int>::max());
+        getChannelByName(channel)->setUserLimit(std::numeric_limits<int>::max());
         break;
       case 4:
-        std::string clientUsername = parameters.substr(3);
+        std::string clientUsername = trimNewline(parameters.substr(3));
         getChannelByName(channel)->removeOperator(get_ClientByNickname(clientUsername));
         break;
       }
