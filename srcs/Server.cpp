@@ -18,12 +18,16 @@ Server::~Server()
 void Server::CleanServer()
 {
     std::cerr << "Cleaning server" << std::endl;
+    for (std::vector<Client*>::iterator it = _clients.begin(); it != _clients.end(); ++it) {
+        delete *it;
+    }
+    _clients.clear();
     std::map<Channel*, std::vector<Client*> >::iterator it;
     for (it = _channels.begin(); it != _channels.end(); ++it) {
-        std::vector<Client*>::iterator clientIt;
-        for (clientIt = it->second.begin(); clientIt != it->second.end(); ++clientIt) {
-            delete *clientIt;
-        }
+        // std::vector<Client*>::iterator clientIt;
+        // for (clientIt = it->second.begin(); clientIt != it->second.end(); ++clientIt) {
+        //     delete *clientIt;
+        // }
         it->second.clear();
         delete it->first;
     }

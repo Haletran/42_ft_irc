@@ -13,7 +13,7 @@ int main(int argc, char **argv)
 	{
 		signal(SIGINT, Server::SignalHandler);
 		// need to fix CTRL+D not working properly
-		signal(SIGQUIT, Server::SignalHandler);
+		signal(SIGQUIT, SIG_IGN);
 		server.ServerInit(atoi(argv[1]), argv[2]);
 	}
 	catch(const std::exception& e)
