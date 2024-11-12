@@ -105,14 +105,15 @@ void Bot::receive_messages() {
 
 void Bot::disconnect() {
     if (sockfd != -1) {
-        send_message("QUIT :Client exiting");
+        send_message("PART " + channel + " :Leaving");
         close(sockfd);
         sockfd = -1;
     }
 }
 
 void Bot::SignalHandler(int signal) {
-    std::cout << "Signal " << signal << " received" << std::endl;
+    (void)signal;
+    throw std::runtime_error("Signal received");
 }
 
 
