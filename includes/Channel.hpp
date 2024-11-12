@@ -16,48 +16,52 @@ class Channel : public Server
 		bool password_needed;
 		int _user_limit;
 	public :
-		// COPLIEN
-		Channel();
-		Channel(std::string channel_name);
-		~Channel();
-		bool operator==(const std::string &other) const;
+	   // COPLIEN
+	   Channel();
+	   Channel(std::string channel_name);
+	   ~Channel();
+	   bool operator==(const std::string &other) const;
 
-		// FUNCTIONS
-		std::string getTopic();
-		void setTopic(std::string topic);
-		const std::string &GetChannelName();
-		void addOperators(Client *client);
-		void addInvited(Client*);
-		bool IsOP(Client *client);
-		bool IsInvited(Client*);
-		void setInviteOnly(bool invite_only);
-		void setTopicChange(bool value);
-		void setPassword(std::string password);
-		void setUserLimit(int user_limit);
-		void setPasswordNeeded(bool condition);
-		void getAllUser(Client *client);
-		bool isAlreadyConnected(Client *client);
-		std::string getTimeCreated();
-		bool getInvite();
-		bool getTopicChange();
-		std::string getFlag();
-		std::string getPassword();
-		bool getPasswordNeeded();
-		int getNbUser() const;
-		int getlimit();
-		void removeOperator(Client *client);
-		void CleanChannel(Channel *chan);
+	   // Getters
+	   std::string getTopic();
+	   const std::string &GetChannelName();
+	   std::string getTimeCreated();
+	   bool getInvite();
+	   bool getTopicChange();
+	   std::string getFlag();
+	   std::string getPassword();
+	   bool getPasswordNeeded();
+	   int getNbUser() const;
+	   int getlimit();
 
-		class ChannelException : public std::exception
-		{
-			public :
-				ChannelException(const std::string &msg) : _msg(msg) {}
-				virtual const char *what() const throw()
-				{
-					return _msg.c_str();
-				}
-				~ChannelException() throw() {}
-			private :
-				std::string _msg;
-		};
+	   // Setters
+	   void setTopic(std::string topic);
+	   void setInviteOnly(bool invite_only);
+	   void setTopicChange(bool value);
+	   void setPassword(std::string password);
+	   void setUserLimit(int user_limit);
+	   void setPasswordNeeded(bool condition);
+
+	   // Operations
+	   void addOperators(Client *client);
+	   void addInvited(Client*);
+	   bool IsOP(Client *client);
+	   bool IsInvited(Client*);
+	   void getAllUser(Client *client);
+	   bool isAlreadyConnected(Client *client);
+	   void removeOperator(Client *client);
+	   void CleanChannel(Channel *chan);
+
+	   class ChannelException : public std::exception
+	   {
+	   	public :
+	   		ChannelException(const std::string &msg) : _msg(msg) {}
+	   		virtual const char *what() const throw()
+	   		{
+	   			return _msg.c_str();
+	   		}
+	   		~ChannelException() throw() {}
+	   	private :
+	   		std::string _msg;
+	   };
 };

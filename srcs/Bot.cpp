@@ -111,20 +111,33 @@ void Bot::disconnect() {
     }
 }
 
+void Bot::SignalHandler(int signal) {
+    std::cout << "Signal " << signal << " received" << std::endl;
+}
+
+
 int main() {
-    signal(SIGPIPE, SIG_IGN);
     srand(time(0));
     std::string server = "localhost";
     int port = 6666;
     std::string nickname = "BOT";
     std::string channel = "#game";
     std::string password = "testtest2";
-
     Bot client(server, port, nickname, channel, password);
-    if (!client.connect_to_server()) {
+    try {
+        signal(SIGPIPE, SIG_IGN);
+        signal(SIGINT, client.SignalHandler);
+        if (!client.connect_to_server()) {
+            return 1;
+        }
+        client.login();
+        client.receive_messages();
+    }
+    catch (std::runtime_error &e)
+    {
+        std::cerr << "Error: " << e.what() << std::endl;
+        client.disconnect();
         return 1;
     }
-    client.login();
-    client.receive_messages();
     return 0;
 }

@@ -18,6 +18,8 @@
 #define USER_NOT_ON_CHANNEL ":localhost 441 " + client->GetNick() + " " + nick + " " + channel + " :They aren't on that channel\r\n"
 #define JOIN_MSG ":" + client->GetNick() + "!" + client->GetUsername() + "@localhost JOIN :" + trimmed_channel_name + "\r\n"
 #define INVITE_ONLY_ERROR ":localhost 473 " + client->GetNick() + " " + trimmed_channel_name + " :Cannot join channel (+i) - you must be invited\r\n"
+#define INVITE_ALREADY_CONNECTED ":localhost 443 " + client->GetNick() + " " + trimmed_channel_name + " :is already on channel\r\n"
+#define ALREADY_IN_CHANNEL_ERROR ":localhost 443 " + client->GetNick() + " " + trimmed_channel_name + " :is already on channel\r\n"
 #define BAD_KEY_ERROR ":localhost 475 " + client->GetNick() + " " + trimmed_channel_name + " :Cannot join channel (+k) - bad key\r\n"
 #define CHANNEL_FULL_ERROR ":localhost 471 " + client->GetNick() + " " + trimmed_channel_name + " :Cannot join channel (+l) - channel is full, try again later\r\n"
 #define CHANNEL_NAME_ERROR ":localhost 403 * " + channel_name + " :Channel name must start with '#'\r\n"
@@ -26,6 +28,7 @@
 #define LIST_USER ":localhost 353 " + client->getNickname() + " = " + _channel_name + " :" + array_op + " " + array_user + "\r\n"
 #define NOT_OP ":localhost 482 " + input->client->getNickname() + " " + getChannelByName(input->channel)->GetChannelName() + " :You're not a channel operator\r\n"
 #define END_OF_NAMES_MSG ":localhost 366 " + client->getNickname() + " " + channel->GetChannelName() + " :End of /NAMES list.\r\n"
+#define PRIV_MSG ":" + client->GetUsername() + "!~" + client->getNickname() + "@localhost PRIVMSG " + nickname + " :" + msg_content + "\r\n"
 #define SEND_DEBUG "\033[32m>>\033[0m " << _fd << " " << trimNewline(msg)
 #define PART_MSG ":" + input->client->GetUsername() + "!~" + input->client->getNickname() + "@localhost PART " + input->channel + "\r\n"
 #define OPERATOR_ERROR "Impossible to add client to list of operators"

@@ -105,12 +105,11 @@ void Server::SendMessageToChannel(const std::string &channel_name,
 
 void Server::SendMessageToSomeone(Client *client, std::string msg_content, std::string nickname)
 {
-  std::string msg = ":" + client->GetUsername() + "!~" + client->getNickname() + "@localhost PRIVMSG " + nickname + " :" + msg_content + "\r\n";
   for (std::vector<Client *>::iterator it = _clients.begin(); it != _clients.end(); ++it)
   {
     if ((*it)->getNickname() == nickname)
     {
-      (*it)->SendMsg(msg);
+      (*it)->SendMsg(PRIV_MSG);
       return;
     }
   }

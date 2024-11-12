@@ -27,8 +27,7 @@ $(OBJ_DIR)/%.o: srcs/%.cpp
 bot:
 	@clear
 	$(CXX) $(CFLAGS) -o bot srcs/Bot.cpp
-	@./bot
-	@rm -f bot
+	@valgrind --leak-check=full --show-leak-kinds=all --track-fds=yes ./bot
 
 hexchat:
 	@if ! flatpak list | grep -q io.github.Hexchat; then echo "Installing Hexchat..." && flatpak install flathub io.github.Hexchat -y ; else echo "Hexchat already installed"; fi

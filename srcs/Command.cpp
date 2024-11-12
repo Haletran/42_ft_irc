@@ -11,6 +11,7 @@ void Server::InviteCommand(t_input *input)
 {
     Client *test = get_ClientByUsername(input->channel);
     Channel *channel_instance = getCurrentChannel(input->client);
+
     if (!test)
       input->client->SendMsg(INVITE_USER_ERROR);
     else if (channel_instance->isAlreadyConnected(test) == false)
@@ -178,7 +179,6 @@ void Server::ModeCommand(t_input *input)
             return ;
         break;
       }
-      // this is not working it's for MODE command that hexchat send when JOIN a channel
     }
     for (std::vector<Client *>::iterator it =
              _channels[getChannelByName(input->channel)].begin();
@@ -198,4 +198,5 @@ void Server::PartCommand(t_input *input)
       if ((*it) != input->client)
         (*it)->SendMsg(PART_MSG);
     }
+    // need to delete user if he leaves if not then he cannot join the channel again
 }

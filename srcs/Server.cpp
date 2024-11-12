@@ -296,6 +296,11 @@ void Server::JoinChannel(const std::string &channel_name, Client *client, std::s
             client->SendMsg(CHANNEL_FULL_ERROR);
             return;
         }
+        else if (channel->isAlreadyConnected(client))
+        {
+            client->SendMsg(ALREADY_IN_CHANNEL_ERROR);
+            return;
+        }
         _channels[channel].push_back(client);
         for (std::vector<Client*>::iterator it = _channels[channel].begin(); it != _channels[channel].end(); ++it)
             (*it)->SendMsg(JOIN_MSG);
