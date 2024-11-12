@@ -202,7 +202,10 @@ void Server::PartCommand(t_input *input)
     {
       if ((*it) != input->client)
         (*it)->SendMsg(PART_MSG);
+      if ((*it) == input->client)
+        _channels[getChannelByName(input->channel)].erase(it);
     }
     // need to delete user if he leaves if not then he cannot join the channel again
+    // that's a big problem i think
     std::cerr << "PART COMMAND" << std::endl;
 }
