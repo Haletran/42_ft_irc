@@ -30,4 +30,5 @@ class Bot {
         void printFile(std::string filename);
         void sendFormattedBlock(const std::string& message);
         static void SignalHandler(int signum);
+        void badApple();
 };

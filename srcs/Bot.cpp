@@ -70,6 +70,61 @@ void Bot::printFile(std::string filename) {
     }
 }
 
+#include <dirent.h>
+
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <string>
+#include <dirent.h>
+#include <algorithm>
+#include <ctime>
+#include <unistd.h>
+#include <iomanip>
+#include <sstream>
+
+void Bot::badApple() {
+    // Directory for ASCII frames
+    DIR* dir;
+    struct dirent* ent;
+    std::vector<std::string> frames;
+    std::string frames_directory = "includes/BotUtils/frames_ascii";
+
+    sleep(3);
+    // Open the directory and load frame filenames into the vector
+    if ((dir = opendir(frames_directory.c_str())) != NULL) {
+        while ((ent = readdir(dir)) != NULL) {
+            std::string file_name = ent->d_name;
+            if (file_name.find("out") == 0 && file_name.find(".txt") != std::string::npos) {
+                frames.push_back(frames_directory + "/" + file_name);
+            }
+        }
+        closedir(dir);
+    } else {
+        std::cerr << "Error: Unable to open frames directory" << std::endl;
+        return;
+    }
+
+    std::sort(frames.begin(), frames.end());
+    for (std::vector<std::string>::iterator it = frames.begin(); it != frames.end(); ++it) {
+        std::ifstream file(it->c_str());
+        if (!file.is_open()) {
+            std::cerr << "Error: Unable to open frame file " << *it << std::endl;
+            break;
+        }
+
+        std::string line;
+        while (std::getline(file, line)) {
+            if (!send_message("PRIVMSG " + channel + " :" + line)) {
+                std::cerr << "Error: Unable to send message from frame " << *it << std::endl;
+                break;
+            }
+        }
+        file.close();
+        usleep(1000000 / 10);
+    }
+}
+
 
 void Bot::receive_messages() {
     char buffer[512];
@@ -85,6 +140,8 @@ void Bot::receive_messages() {
             send_message("PRIVMSG " + channel + " :Here are the commands: !help, !ping, !ascii");
         else if (message.find("!ping") != std::string::npos)
             send_message("PRIVMSG " + channel + " :PONG");
+        else if (message.find("!bad-apple") != std::string::npos)
+            badApple();
         else if (message.find("!ascii") != std::string::npos)
         {
             switch(rand() % 3)

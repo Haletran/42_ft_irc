@@ -62,6 +62,12 @@
         "cfenv": "cpp",
         "cinttypes": "cpp",
         "typeinfo": "cpp",
-        "semaphore": "cpp"
+        "semaphore": "cpp",
+        "charconv": "cpp",
+        "fstream": "cpp",
+        "variant": "cpp",
+        "format": "cpp",
+        "text_encoding": "cpp",
+        "iomanip": "cpp"
     }
 }
