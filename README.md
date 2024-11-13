@@ -4,6 +4,8 @@
 
 
 Script to generate frames for animation :)
+> Note :
+> set scrollback lines to `23`
 
 
 ```bash

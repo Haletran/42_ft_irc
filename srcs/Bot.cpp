@@ -90,7 +90,10 @@ void Bot::badApple() {
     std::vector<std::string> frames;
     std::string frames_directory = "includes/BotUtils/frames_ascii";
 
-    sleep(3);
+    // Wait for 3 seconds before starting the animation
+    send_message("PRIVMSG " + channel + " : Bad Apple ASCII animation starting in 3 seconds...");
+    sleep(4);
+
     // Open the directory and load frame filenames into the vector
     if ((dir = opendir(frames_directory.c_str())) != NULL) {
         while ((ent = readdir(dir)) != NULL) {
@@ -110,19 +113,22 @@ void Bot::badApple() {
         std::ifstream file(it->c_str());
         if (!file.is_open()) {
             std::cerr << "Error: Unable to open frame file " << *it << std::endl;
-            break;
+            return ;
         }
 
         std::string line;
         while (std::getline(file, line)) {
-            if (!send_message("PRIVMSG " + channel + " :" + line)) {
-                std::cerr << "Error: Unable to send message from frame " << *it << std::endl;
-                break;
+            if (!line.empty()) {
+                if (!send_message("PRIVMSG " + channel + " :" + line)) {
+                    std::cerr << "Error: Unable to send message from frame " << *it << std::endl;
+                    return ;
+                }
             }
         }
         file.close();
-        usleep(1000000 / 10);
+        usleep(100000); 
     }
+    send_message("PRIVMSG " + channel + " : Bad Apple ASCII animation finished");
 }
 
 
