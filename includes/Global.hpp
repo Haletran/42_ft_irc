@@ -30,7 +30,7 @@ bool parseMessage(const std::string &msg, std::string &command,
                   std::string &channel, std::string &parameters);
 std::string parseChannelName(const std::string &line);
 void clearVector(std::vector<Client*>& vec);
-
+bool check_invalid_chars(const std::string &str);
 // colors
 #define RED "\033[1;31m"
 #define GREEN "\033[1;32m"

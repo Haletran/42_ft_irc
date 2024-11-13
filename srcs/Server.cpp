@@ -182,9 +182,19 @@ void Server::AuthenticateClient(int fd, std::string buffer)
 				send(fd, errorMsg.c_str(), errorMsg.length(), 0);
 			}
 			else
-			{client->SetNick(nick);
-			std::string msg = ":localhost 001 " + nick + " :Welcome to the IRC server\r\n";
-			send(fd, msg.c_str(), msg.length(), 0);}
+			{
+				if (check_invalid_chars(nick))
+				{
+					client->SetNick(nick);
+					std::string msg = ":localhost 001 " + nick + " :Welcome to the IRC server\r\n";
+					send(fd, msg.c_str(), msg.length(), 0);
+				}
+				else
+				{
+					std::string errorMsg = ":localhost 432 * " + nick + " :Erroneous nickname\r\n";
+					send(fd, errorMsg.c_str(), errorMsg.length(), 0);
+				}
+			}
 		}
 		else if (line.find("USER ") == 0)
 		{

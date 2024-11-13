@@ -67,3 +67,29 @@ void clearVector(std::vector<Client*>& vec) {
     }
     vec.clear();
 }
+
+bool check_invalid_chars(const std::string &str)
+{
+    if (str.empty())
+        return false;
+    char first_char = str[0];
+    if (first_char == '$' || first_char == ':' || 
+        first_char == '#' || first_char == '&' || 
+        first_char == '+' || first_char == '!') 
+        {
+        return false;
+    }
+    for (size_t i = 0; i < str.length(); ++i) {
+        char c = str[i];
+        if (c == ' ' || c == ',' || c == '*' || c == '?' || c == '!' || c == '@' || c == '.') {
+            return false;
+        }
+    }
+    for (size_t i = 0; i < str.length(); ++i)
+    {
+        char c = str[i];
+        if (!(std::isalnum(c) || c == '_'))
+            return false;
+    }
+    return true;
+}
