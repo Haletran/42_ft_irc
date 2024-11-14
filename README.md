@@ -5,12 +5,11 @@
 
 Script to generate frames for animation :)
 > Note :
-> set scrollback lines to `23`
-
+> set scrollback lines to `30`
 
 ```bash
 # Inspired by this tutorial : https://gist.github.com/aishenreemo/1902ce9d938202fe03ae9377ac69a7e9
-
+#ascii image converter link : https://github.com/TheZoraiz/ascii-image-converter/releases/download/v1.13.1/ascii-image-converter_Linux_amd64_64bit.tar.gz
 mkdir animation
 cd animation
 
@@ -23,6 +22,6 @@ cd frames
 mkdir -p ../frames_ascii
 
 for file in *.jpg; do
-    ascii-image-converter "$file" --braille > "../frames_ascii/${file%.jpg}.txt"
+    ascii-image-converter "$file" --braille --dimensions 90,30 > "../frames_ascii/${file%.jpg}.txt"
 done
 ```

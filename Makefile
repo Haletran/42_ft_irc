@@ -27,7 +27,7 @@ $(OBJ_DIR)/%.o: srcs/%.cpp
 bot:
 	@clear
 	$(CXX) $(CFLAGS) -o bot srcs/Bot.cpp
-	@valgrind --leak-check=full --show-leak-kinds=all --track-fds=yes ./bot
+	@./bot localhost BAPASCII
 
 hexchat:
 	@if ! flatpak list | grep -q io.github.Hexchat; then echo "Installing Hexchat..." && flatpak install flathub io.github.Hexchat -y ; else echo "Hexchat already installed"; fi
@@ -36,12 +36,12 @@ run: re
 	@clear
 	@echo "Starting "$(NAME)" and hexchat..."
 	@flatpak run io.github.Hexchat > /dev/null 2>&1 &
-	@./ircserv 6666 testtest2
+	@./ircserv 6697 mdp
 
 valgrind: re
 	@clear
 	@echo "Starting server with valgrind..."
-	@valgrind --leak-check=full --show-leak-kinds=all --track-fds=yes  ./ircserv 6666 testtest2
+	@valgrind --leak-check=full --show-leak-kinds=all --track-fds=yes  ./ircserv 6697 mdp
 
 clean:
 	rm -f $(OBJ)

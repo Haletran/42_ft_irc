@@ -8,6 +8,18 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <unistd.h>
+#include <dirent.h>
+#include <fstream>
+#include <vector>
+#include <string>
+#include <dirent.h>
+#include <algorithm>
+#include <ctime>
+#include <unistd.h>
+#include <iomanip>
+#include <sstream>
+#include <csignal>
+#include <fstream>
 
 class Bot {
     private:
@@ -20,7 +32,7 @@ class Bot {
         bool send_message(const std::string& message);
         bool isStarted;
     public:
-        Bot(const std::string& server, int port, const std::string& nick, const std::string& chan, const std::string& password);
+        Bot(const std::string& ip, const std::string& name);
         ~Bot();
         bool connect_to_server();
         void login();
@@ -30,5 +42,5 @@ class Bot {
         void printFile(std::string filename);
         void sendFormattedBlock(const std::string& message);
         static void SignalHandler(int signum);
-        void badApple();
+        void renderVideo(std::string frames_directory);
 };

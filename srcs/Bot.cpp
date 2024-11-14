@@ -1,8 +1,14 @@
 #include "../includes/Global.hpp"
-#include <csignal>
-#include <fstream>
 
-Bot::Bot(const std::string& server, int port, const std::string& nick, const std::string& chan, const std::string& password) : sockfd(-1), server_ip(server), port(port), nickname(nick),  channel(chan), password(password) {}
+Bot::Bot(const std::string& ip, const std::string& name) {
+    this->sockfd = -1;
+    this->server_ip = ip;
+    this->port = 6697;
+    this->nickname = name;
+    this->channel = "#bot";
+    this->password = "mdp";
+    this->isStarted = false;
+}
 
 Bot::~Bot() {
     disconnect();
@@ -70,28 +76,12 @@ void Bot::printFile(std::string filename) {
     }
 }
 
-#include <dirent.h>
-
-#include <iostream>
-#include <fstream>
-#include <vector>
-#include <string>
-#include <dirent.h>
-#include <algorithm>
-#include <ctime>
-#include <unistd.h>
-#include <iomanip>
-#include <sstream>
-
-void Bot::badApple() {
-    // Directory for ASCII frames
+void Bot::renderVideo(std::string frames_directory) {
     DIR* dir;
     struct dirent* ent;
     std::vector<std::string> frames;
-    std::string frames_directory = "includes/BotUtils/frames_ascii";
 
-    // Wait for 3 seconds before starting the animation
-    send_message("PRIVMSG " + channel + " : Bad Apple ASCII animation starting in 3 seconds...");
+    send_message("PRIVMSG " + channel + " : ASCII animation starting in 3 seconds...");
     sleep(4);
 
     // Open the directory and load frame filenames into the vector
@@ -107,8 +97,9 @@ void Bot::badApple() {
         std::cerr << "Error: Unable to open frames directory" << std::endl;
         return;
     }
-
     std::sort(frames.begin(), frames.end());
+
+
     for (std::vector<std::string>::iterator it = frames.begin(); it != frames.end(); ++it) {
         std::ifstream file(it->c_str());
         if (!file.is_open()) {
@@ -126,9 +117,9 @@ void Bot::badApple() {
             }
         }
         file.close();
-        usleep(100000); 
+        usleep(100000);
     }
-    send_message("PRIVMSG " + channel + " : Bad Apple ASCII animation finished");
+    send_message("PRIVMSG " + channel + " : ASCII animation finished");
 }
 
 
@@ -143,11 +134,13 @@ void Bot::receive_messages() {
         std::cout << message;
 
         if (message.find("!help") != std::string::npos)
-            send_message("PRIVMSG " + channel + " :Here are the commands: !help, !ping, !ascii, !bad-apple");
+            send_message("PRIVMSG " + channel + " :Here are the commands: !help, !ping, !ascii, !bad-apple, !chaplin");
         else if (message.find("!ping") != std::string::npos)
             send_message("PRIVMSG " + channel + " :PONG");
         else if (message.find("!bad-apple") != std::string::npos)
-            badApple();
+            renderVideo("includes/BotUtils/bad-apple");
+        else if (message.find("!chaplin") != std::string::npos)
+            renderVideo("includes/BotUtils/chaplin");
         else if (message.find("!ascii") != std::string::npos)
         {
             switch(rand() % 3)
@@ -159,7 +152,7 @@ void Bot::receive_messages() {
                     printFile("includes/BotUtils/tim");
                     break;
                 case 2:
-                    printFile("includes/BotUtils/Shrek");
+                    printFile("includes/BotUtils/shrek");
                     break;
             }
         }
@@ -180,14 +173,15 @@ void Bot::SignalHandler(int signal) {
 }
 
 
-int main() {
+int main(int argc, char **argv) {
+    if (argc != 3) {
+        std::cerr << "Usage: " << argv[0] << " <server_ip> <name>" << std::endl;
+        return 1;
+    }
     srand(time(0));
-    std::string server = "localhost";
-    int port = 6666;
-    std::string nickname = "BOT";
-    std::string channel = "#game";
-    std::string password = "testtest2";
-    Bot client(server, port, nickname, channel, password);
+    std::string nickname = argv[2];
+    std::string ip = argv[1];
+    Bot client(ip, nickname);
     try {
         signal(SIGPIPE, SIG_IGN);
         signal(SIGINT, client.SignalHandler);
