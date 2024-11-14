@@ -151,6 +151,7 @@ void Server::AuthenticateClient(int fd, std::string buffer)
 		return;
 	std::istringstream stream(buffer);
 	std::string line;
+	//std::cout << buffer << std::endl;
 	while (std::getline(stream, line))
 	{
 		if (line.find("PASS ") == 0)
@@ -172,7 +173,7 @@ void Server::AuthenticateClient(int fd, std::string buffer)
 				close(fd);
 			}
 		}
-		else if (line.find("NICK ") == 0)
+		if (line.find("NICK ") == 0)
 		{
 			std::string nick = line.substr(5);
 			nick = trimNewline(nick);
@@ -181,22 +182,19 @@ void Server::AuthenticateClient(int fd, std::string buffer)
 				std::string errorMsg = ":localhost  433 * " + nick + " :Nickname is already in use\r\n";
 				send(fd, errorMsg.c_str(), errorMsg.length(), 0);
 			}
+			else if (check_invalid_chars(nick))
+			{
+				client->SetNick(nick);
+				std::string msg = ":localhost 001 " + nick + " :Welcome to the IRC server\r\n";
+				send(fd, msg.c_str(), msg.length(), 0);
+			}
 			else
 			{
-				if (check_invalid_chars(nick))
-				{
-					client->SetNick(nick);
-					std::string msg = ":localhost 001 " + nick + " :Welcome to the IRC server\r\n";
-					send(fd, msg.c_str(), msg.length(), 0);
-				}
-				else
-				{
-					std::string errorMsg = ":localhost 432 * " + nick + " :Erroneous nickname\r\n";
-					send(fd, errorMsg.c_str(), errorMsg.length(), 0);
-				}
+				std::string errorMsg = ":localhost 432 * " + nick + " :Erroneous nickname\r\n";
+				send(fd, errorMsg.c_str(), errorMsg.length(), 0);
 			}
 		}
-		else if (line.find("USER ") == 0)
+		if (line.find("USER ") == 0)
 		{
             std::vector<std::string> parts = splitString(line);
             if (parts.size() >= 2)
@@ -225,9 +223,9 @@ void Server::AcceptClient()
 	memset(&newpoll, 0, sizeof(newpoll));
 	int new_fd = accept(_server_socket, (struct sockaddr *)&client_addr, &addr_size); // accept connection
 	if (new_fd == -1)
-		{std::cerr << "Failed to accept connection" << std::endl;return;}
+		{std::cerr << "Failed to accept connection" << std::endl;return;} // delete client if failed
 	if (fcntl(new_fd, F_SETFL, O_NONBLOCK) == -1) // set non-blocking
-		{std::cerr << "Failed to set non-blocking" << std::endl; close(new_fd); return;}
+		{std::cerr << "Failed to set non-blocking" << std::endl; close(new_fd); return;} // delete client if failed
 	newpoll.fd = new_fd;
 	newpoll.events = POLLIN;
 	newpoll.revents = 0;
