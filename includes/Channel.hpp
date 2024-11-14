@@ -51,6 +51,7 @@ class Channel : public Server
 	   bool isAlreadyConnected(Client *client);
 	   void removeOperator(Client *client);
 	   void CleanChannel(Channel *chan);
+	   void removeClient(Client *client);
 
 	   class ChannelException : public std::exception
 	   {

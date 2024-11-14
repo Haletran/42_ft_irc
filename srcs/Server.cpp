@@ -151,7 +151,6 @@ void Server::AuthenticateClient(int fd, std::string buffer)
 		return;
 	std::istringstream stream(buffer);
 	std::string line;
-	//std::cout << buffer << std::endl;
 	while (std::getline(stream, line))
 	{
 		if (line.find("PASS ") == 0)

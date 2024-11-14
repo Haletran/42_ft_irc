@@ -88,6 +88,20 @@ std::string Channel::getTimeCreated()
     return (time_created);
 }
 
+void Channel::removeClient(Client *client)
+{
+    if (!client)
+        throw std::runtime_error("Not found in the channel");
+    for (std::vector<Client*>::iterator it = _clients.begin(); it != _clients.end(); ++it)
+    {
+        if ((*it)->GetUsername() == client->GetUsername())
+        {
+            _clients.erase(it);
+            return;
+        }
+    }
+}
+
 
 void Channel::removeOperator(Client *client)
 {
