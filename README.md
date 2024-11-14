@@ -15,6 +15,7 @@
 Script to generate frames for animation :)
 > Note :
 > set scrollback lines to `30`
+> change font to `JetBrains Mono` for better rendering of black color
 
 ```bash
 # Inspired by this tutorial : https://gist.github.com/aishenreemo/1902ce9d938202fe03ae9377ac69a7e9

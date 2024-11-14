@@ -1,4 +1,5 @@
 #include "../includes/Global.hpp"
+#include <sys/socket.h>
 
 Bot::Bot(const std::string& ip, const std::string& name) {
     this->sockfd = -1;
@@ -48,6 +49,7 @@ bool Bot::connect_to_server() {
 }
 
 void Bot::login() {
+    sleep(1);
     send_message("PASS " + password);
     send_message("NICK " + nickname);
     send_message("USER " + nickname + " 0 * :" + nickname);
@@ -81,10 +83,9 @@ void Bot::renderVideo(std::string frames_directory) {
     struct dirent* ent;
     std::vector<std::string> frames;
 
-    send_message("PRIVMSG " + channel + " : ASCII animation starting in 3 seconds...");
+    send_message("PRIVMSG " + channel + " :ASCII animation starting in 3 seconds...");
     sleep(4);
 
-    // Open the directory and load frame filenames into the vector
     if ((dir = opendir(frames_directory.c_str())) != NULL) {
         while ((ent = readdir(dir)) != NULL) {
             std::string file_name = ent->d_name;
@@ -119,7 +120,7 @@ void Bot::renderVideo(std::string frames_directory) {
         file.close();
         usleep(100000);
     }
-    send_message("PRIVMSG " + channel + " : ASCII animation finished");
+    send_message("PRIVMSG " + channel + " :ASCII animation finished");
 }
 
 
@@ -139,8 +140,6 @@ void Bot::receive_messages() {
             send_message("PRIVMSG " + channel + " :PONG");
         else if (message.find("!bad-apple") != std::string::npos)
             renderVideo("includes/BotUtils/bad-apple");
-        else if (message.find("!chaplin") != std::string::npos)
-            renderVideo("includes/BotUtils/chaplin");
         else if (message.find("!ascii") != std::string::npos)
         {
             switch(rand() % 3)
