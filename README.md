@@ -11,6 +11,7 @@
 - [ ] : check if the BOT can make leaks
 - [ ] : fix QUIT command
 - [ ] : Parsing of channel name, username according to RFC
+- [ ] : CTRL+D not working correctly
 
 Script to generate frames for animation :)
 > Note :
