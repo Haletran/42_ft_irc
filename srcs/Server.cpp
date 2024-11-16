@@ -144,6 +144,25 @@ std::vector<std::string> splitString(const std::string &str) {
     return result;
 }
 
+bool Server::isValidUsername(const std::string& username) 
+{
+    // Check length
+    if (username.empty() || username.length() > 9)
+        return false;
+
+    // Check first character
+    if (username[0] == '$' || username[0] == ':')
+        return false;
+
+    // Check invalid characters
+    for (size_t i = 0; i < username.length(); i++) {
+        char c = username[i];
+        if (c == ' ' || c == '\0' || c == '\r' || c == '\n' || c == '@')
+            return false;
+    }
+    return true;
+}
+
 void Server::AuthenticateClient(int fd, std::string buffer)
 {
     Client *client = getClientByFd(fd);
@@ -200,8 +219,37 @@ void Server::AuthenticateClient(int fd, std::string buffer)
 			{
                 std::string username = parts[1];
                 username = trimNewline(username);
-                client->SetUsername(username);
-                std::string msg = "Username set to " + username + "\n";
+                if (!isValidUsername(username)) 
+				{
+            		std::string errorMsg = ":localhost 432 * " + username + " :Erroneous username\r\n";
+           			send(fd, errorMsg.c_str(), errorMsg.length(), 0);
+            		return;
+        		}
+                // Si le username n'existe PAS
+                if (get_ClientByUsername(username) == NULL)
+                {
+                    client->SetUsername(username);
+                }
+                // Si le username existe déjà
+                else
+                {
+                    int i = 1;
+                    std::string user_copy;
+                    while (1)
+                    {
+                        std::stringstream ss;
+                		ss << username << i;
+                		user_copy = ss.str();
+                        if(get_ClientByUsername(user_copy) == NULL)
+                        {
+                            client->SetUsername(user_copy);
+                            username = user_copy; // Update username for the message                               
+                            break;                              
+                        }
+                        i++;
+                    }
+                }
+                std::string msg = ":localhost 001 " + username + " :Welcome to the IRC network\r\n";
                 send(fd, msg.c_str(), msg.length(), 0);
 			}
 		}
@@ -246,22 +294,39 @@ void Server::printtabclient_fd(std::vector<Client> _clients)
 
 void Server::ReceiveNewData(int fd)
 {
-	char buffer[10000];
-	memset(buffer, 0, sizeof(buffer));
-	int bytes_read = recv(fd, buffer, sizeof(buffer) - 1, 0); // read data from client
-	if (bytes_read <= 0)
-	{
-		std::cout << "Client disconnected: " << fd << std::endl;
-		ClearClients(fd);
-		close(fd);
-		return;
-	}
-	else
-		buffer[bytes_read] = '\0';
-	if (getClientByFd(fd)->GetAuth() == false || getClientByFd(fd)->GetNick().empty() || getClientByFd(fd)->GetUsername().empty())
-		AuthenticateClient(fd, buffer);
-	else
-		ProcedeMessage(buffer, getClientByFd(fd));
+    char buffer[10000];
+    memset(buffer, 0, sizeof(buffer));
+    int bytes_read = recv(fd, buffer, sizeof(buffer) - 1, 0);
+    
+    if (bytes_read <= 0)
+    {
+        std::cout << "Client disconnected: " << fd << std::endl;
+        ClearClients(fd);
+        close(fd);
+        return;
+    }
+    
+    Client* client = getClientByFd(fd);
+    if (!client)
+        return;
+
+    // Append new data to client's buffer
+    client->AppendToBuffer(std::string(buffer, bytes_read));
+    
+    // Process complete messages
+    std::string& clientBuffer = client->GetBuffer();
+    size_t pos;
+    
+    while ((pos = clientBuffer.find("\r\n")) != std::string::npos)
+    {
+        std::string completeMsg = clientBuffer.substr(0, pos);
+        clientBuffer.erase(0, pos + 2); // Remove processed message including \r\n
+        
+        if (client->GetAuth() == false || client->GetNick().empty() || client->GetUsername().empty())
+            AuthenticateClient(fd, completeMsg);
+        else
+            ProcedeMessage(completeMsg, client);
+    }
 }
 
 Client *Server::getClientByFd(int fd)
@@ -355,17 +420,12 @@ void Server::LeaveChannel(const std::string &channel_name, Client *client)
     Channel* channel = getChannelByName(channel_name);
     if (channel != NULL)
     {
-        std::vector<Client*>& clients = _channels[channel];
-        for (std::vector<Client*>::iterator it = clients.begin(); it != clients.end(); ++it)
-        {
-            if (*it == client)
-            {
-                clients.erase(it);
-                std::string msg = "Client left channel " + channel_name + "\n";
-                send(client->GetFd(), msg.c_str(), msg.length(), 0);
-                break;
-            }
-        }
+        //std::vector<Client*>& clients = _channels[channel];
+		std::string partMsg = ":" + client->GetNick() + "!" + client->GetUsername() 
+                             + "@localhost PART " + channel_name + "\r\n";
+		SendMessageToChannel(channel_name, client, partMsg);
+		send(client->GetFd(), partMsg.c_str(), partMsg.length(), 0);
+        channel->removeClient(client);
     }
     else
     {

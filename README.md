@@ -5,13 +5,14 @@
 
 ## ERRORS
 
-- [ ] : if user leaves the channel send a message to every user on the channel that he leaves
-- [ ] : if the user have the same username then it think that both user has leave the channel
+- [ ] : if user leaves the channel send a message to every user on the channel that he leaves ✅
+- [ ] : if the user have the same username then it think that both user has leave the channel ✅ fixed (i think) 2 users cant have the same username now (i add 1...etc to the username)
+- [ ] : if the user leaves channel he can't rejoin it cause it says he is alredy in channel (jai essaye de regler le probleme mais jai pas reussi, ca vient probablement du fait que de dans PART on doit le delete d'un vector qu'est pas le bon et dans alreadyinchannel check le mauvais vector jsp)
 - [ ] : refactor free because such a mess
 - [ ] : check if the BOT can make leaks
 - [ ] : fix QUIT command
-- [ ] : Parsing of channel name, username according to RFC
-- [ ] : CTRL+D not working correctly
+- [ ] : Parsing of channel name, username according to RFC ✅
+- [ ] : CTRL+D not working correctly (a tester jai ajoute un truc mais pas sur qu ca fonctionne)
 
 Script to generate frames for animation :)
 > Note :
