@@ -9,7 +9,8 @@
 - [ ] : if the user have the same username then it think that both user has leave the channel ✅
 - [ ] : refactor free because such a mess
 - [ ] : check if the BOT can make leaks
-- [ ] : fix QUIT command / PART command ✅ 
+- [ ] : fix QUIT command
+- [ ] : fix PART command ✅ 
 - [ ] : Parsing of channel name, username according to RFC ✅
 
 Script to generate frames for animation :)
