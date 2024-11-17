@@ -189,6 +189,8 @@ void Server::ModeCommand(t_input *input)
 
 void Server::PartCommand(t_input *input)
 {
+    std::cout << "PART COMMAND" << std::endl;
+    
     Channel* channel = getChannelByName(input->channel);
     if (_channels[channel].size() == 1)
     {
@@ -196,15 +198,19 @@ void Server::PartCommand(t_input *input)
         delete channel;
         return ;
     }
-    for (std::vector<Client *>::iterator it =
-             _channels[getChannelByName(input->channel)].begin();
-         it != _channels[getChannelByName(input->channel)].end(); ++it)
+    for (std::vector<Client *>::iterator it = _channels[channel].begin();
+         it != _channels[channel].end(); ++it)
     {
-      if ((*it) != input->client)
-        (*it)->SendMsg(PART_MSG);
-      // if ((*it) == input->client)
-      //   _channels[getChannelByName(input->channel)].erase(it);
+        if ((*it) != input->client)
+            (*it)->SendMsg(PART_MSG);
     }
+    channel->removeClient(input->client);
+    channel->removeOperator(input->client);
+    std::vector<Client*>& channelClients = _channels[channel];
+    channelClients.erase(
+        std::remove(channelClients.begin(), channelClients.end(), input->client),
+        channelClients.end()
+    );
     // need to delete user if he leaves if not then he cannot join the channel again
     // that's a big problem i think
     //channel->removeClient(input->client);

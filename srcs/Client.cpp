@@ -4,7 +4,6 @@ Client::Client()
 {
 	_fd = -1;
 	_auth = false;
-    _buffer = "";
 }
 
 Client::Client(Client const &src)
@@ -21,25 +20,6 @@ void Client::SetFd(int fd)
 {
 	_fd = fd;
 }
-
-void Client::AppendToBuffer(const std::string& data)
-{
-    // Add size check
-    if (_buffer.size() + data.size() > MAX_BUFFER_SIZE) {
-        _buffer.clear(); // Reset if too large
-        return;
-    }
-    _buffer += data;
-}
-
-std::string& Client::GetBuffer()
-{
-    return _buffer;
-}
-
-void Client::ClearBuffer() { _buffer.clear(); }
-
-size_t Client::GetBufferSize() const { return _buffer.size(); }
 
 void Client::SetIp(std::string ip)
 {

@@ -11,35 +11,24 @@ Channel::Channel() : _channel_name("#general"),  _topic("Nothing particular"), _
 
 Channel::Channel(std::string channel_name)
 {
-    if (channel_name.length() < 2 || channel_name.length() > 50)
-    {
-        throw ChannelException(CHANNEL_NAME_ERROR);
-    }
-
     if (channel_name[0] != '#')
     {
         throw ChannelException(CHANNEL_NAME_ERROR);
     }
-
-    for (size_t i = 1; i < channel_name.length(); i++)
+    else
     {
-        char c = channel_name[i];
-        if (c <= 32 || c == ',' || c == '^' || c == ' ')
-        {
-            throw ChannelException(CHANNEL_NAME_ERROR);
-        }
+        _channel_name = channel_name;
+        _topic = "Nothing particular";
+        _invite_only = false;
+		_password = "";
+		password_needed = false;
+		_topic_change = true;
+		_user_limit = std::numeric_limits<int>::max();
+        std::stringstream ss;
+        std::time_t current_time = std::time(0);
+        ss << current_time;
+        this->time_created = ss.str();
     }
-    _channel_name = channel_name;
-    _topic = "Nothing particular";
-    _invite_only = false;
-    _password = "";
-    password_needed = false;
-    _topic_change = true;
-    _user_limit = std::numeric_limits<int>::max();
-    std::stringstream ss;
-    std::time_t current_time = std::time(0);
-    ss << current_time;
-    this->time_created = ss.str();
 }
 
 std::string Channel::getTopic()
@@ -99,41 +88,20 @@ std::string Channel::getTimeCreated()
     return (time_created);
 }
 
-void Channel::removeClient(Client* client)
+void Channel::removeClient(Client *client)
 {
-    std::cout << "=== REMOVING CLIENT ===" << std::endl;
-    std::cout << "Before removal - Clients: " << _clients.size() << std::endl;
-    
-    // Remove from _clients
-    std::vector<Client*>::iterator it = _clients.begin();
-    while (it != _clients.end()) {
-        if ((*it)->GetFd() == client->GetFd()) {
-            it = _clients.erase(it);
-            std::cout << "Client removed from _clients" << std::endl;
-        } else {
-            ++it;
+    if (!client)
+        throw std::runtime_error("Not found in the channel");
+    for (std::vector<Client*>::iterator it = _clients.begin(); it != _clients.end(); ++it)
+    {
+        if ((*it)->GetUsername() == client->GetUsername())
+        {
+            _clients.erase(it);
+            return;
         }
     }
-
-    // Remove from _operators
-    it = _operators.begin();
-    while (it != _operators.end()) {
-        if ((*it)->GetFd() == client->GetFd()) {
-            it = _operators.erase(it);
-            std::cout << "Client removed from _operators" << std::endl;
-        } else {
-            ++it;
-        }
-    }
-
-    std::cout << "After removal - Clients: " << _clients.size() << std::endl;
-    std::cout << "Remaining clients:" << std::endl;
-    for (std::vector<Client*>::const_iterator it = _clients.begin(); 
-         it != _clients.end(); ++it) {
-        std::cout << "- " << (*it)->GetNick() << " (fd: " << (*it)->GetFd() << ")" << std::endl;
-    }
-    std::cout << "==================" << std::endl;
 }
+
 
 void Channel::removeOperator(Client *client)
 {
@@ -250,26 +218,20 @@ bool Channel::IsInvited(Client*client)
 
 bool Channel::isAlreadyConnected(Client *client)
 {
-    std::cout << "Checking if client " << client->GetNick() << " is connected" << std::endl;
-    std::cout << "Current clients in channel:" << std::endl;
-    for (std::vector<Client*>::iterator it = _clients.begin(); it != _clients.end(); ++it) {
-        std::cout << "- " << (*it)->GetNick() << std::endl;
-    }
-
-    // Rest of the code remains the same
-    std::string username = client->GetNick();
+    std::string nick = client->GetNick();
     for (std::vector<Client*>::iterator it = _clients.begin(); it != _clients.end(); ++it)
     {
-        if ((*it)->GetNick() == username)
+        if ((*it)->GetNick() == nick)
             return true;
     }
     for (std::vector<Client*>::iterator it = _operators.begin(); it != _operators.end(); ++it)
     {
-        if ((*it)->GetNick() == username)
+        if ((*it)->GetNick() == nick)
             return true;
     }
     return false;
 }
+
 void Channel::CleanChannel(Channel *chan)
 {
     clearVector(chan->_operators);
