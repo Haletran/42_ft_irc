@@ -85,7 +85,8 @@ void Bot::renderVideo(std::string frames_directory) {
 
     send_message("PRIVMSG " + channel + " :ASCII animation starting in 3 seconds...");
     sleep(4);
-
+    if (frames_directory == "includes/BotUtils/bad-apple")
+        system("cvlc --play-and-exit includes/BotUtils/bad-apple/bad_apple.mp3 > /dev/null 2>&1 &");
     if ((dir = opendir(frames_directory.c_str())) != NULL) {
         while ((ent = readdir(dir)) != NULL) {
             std::string file_name = ent->d_name;
