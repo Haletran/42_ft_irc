@@ -136,11 +136,23 @@ void Bot::receive_messages() {
         std::cout << message;
 
         if (message.find("!help") != std::string::npos)
-            send_message("PRIVMSG " + channel + " :Here are the commands: !help, !ping, !ascii, !bad-apple, !chaplin");
+            send_message("PRIVMSG " + channel + " :Here are the commands: !help, !ping, !ascii, !bad-apple");
         else if (message.find("!ping") != std::string::npos)
             send_message("PRIVMSG " + channel + " :PONG");
         else if (message.find("!bad-apple") != std::string::npos)
             renderVideo("includes/BotUtils/bad-apple");
+        else if (message.find("quoi") != std::string::npos)
+        {
+            switch(rand() % 2)
+            {
+                case(0):
+                    send_message("PRIVMSG " + channel + " :feur");
+                    break;
+                case(1):
+                    send_message("PRIVMSG " + channel + " :quoicoubeh");
+                    break;
+            }
+        }
         else if (message.find("!ascii") != std::string::npos)
         {
             switch(rand() % 3)

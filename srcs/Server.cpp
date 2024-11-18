@@ -133,7 +133,7 @@ void Server::ServerInit(int port, std::string pwd)
 	}
 	CloseFds();
 }
-bool Server::isValidUsername(const std::string& username) 
+bool Server::isValidUsername(const std::string& username)
 {
     // Check length
     if (username.empty() || username.length() > 9)
@@ -240,8 +240,8 @@ void Server::AuthenticateClient(int fd, std::string buffer)
                         if(get_ClientByUsername(user_copy) == NULL)
                         {
                             client->SetUsername(user_copy);
-                            username = user_copy; // Update username for the message                               
-                            break;                              
+                            username = user_copy; // Update username for the message
+                            break;
                         }
                         i++;
                     }
@@ -485,4 +485,27 @@ Channel *Server::getCurrentChannel(Client *client){
         }
     }
     return NULL;
+}
+
+
+void Server::SendQuittingMessage(Client *client)
+{
+    Channel* channel = getCurrentChannel(client);
+    std::string msg = ":" + client->GetNick() + "!~" + client->GetUsername() + "@localhost QUIT :Client Quit\r\n";
+    if (channel != NULL)
+    {
+        std::vector<Client*>& clients = _channels[channel];
+        for (std::vector<Client*>::iterator it = clients.begin(); it != clients.end(); ++it)
+        {
+            if (*it == client)
+            {
+                clients.erase(it);
+                break;
+            }
+        }
+        for (std::vector<Client*>::iterator it = clients.begin(); it != clients.end(); ++it)
+        {
+            (*it)->SendMsg(msg);
+        }
+    }
 }

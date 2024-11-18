@@ -60,6 +60,7 @@ void Server::executeCommand(t_input *input)
   }
   case 8: // QUIT
   {
+    SendQuittingMessage(input->client);
     close(input->client->GetFd());
     ClearClients(input->client->GetFd());
     break;

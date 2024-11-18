@@ -31,4 +31,5 @@
 #define PRIV_MSG ":" + client->GetUsername() + "!~" + client->getNickname() + "@localhost PRIVMSG " + nickname + " :" + msg_content + "\r\n"
 #define SEND_DEBUG "\033[32m>>\033[0m " << _fd << " " << trimNewline(msg)
 #define PART_MSG ":" + input->client->GetUsername() + "!~" + input->client->getNickname() + "@localhost PART " + input->channel + "\r\n"
+
 #define OPERATOR_ERROR "Impossible to add client to list of operators"

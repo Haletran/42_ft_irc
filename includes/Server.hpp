@@ -62,6 +62,7 @@ class Server
 	   void printtabclient_fd(std::vector<Client> _clients);
 	   bool isValidUsername(const std::string& username);
 	   bool isValidChannelName(const std::string& channel_name);
+	   void SendQuittingMessage(Client *client);
 
 	   // COMMAND
 	   void JoinCommand(t_input *input);
