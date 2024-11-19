@@ -7,11 +7,11 @@
 
 - [x] : if user leaves the channel send a message to every user on the channel that he leaves
 - [ ] : if the user have the same username then it think that both user has leave the channel
-- [ ] : refactor free because such a mess
 - [x] : check if the BOT can make leaks
 - [x] : fix QUIT command
 - [x] : fix PART command
 - [x] : Parsing of channel name, username according to RFC
+- [ ] : fix CTRL+D (not working on netcat)
 
 Script to generate frames for animation :)
 > Note :

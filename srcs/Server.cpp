@@ -1,4 +1,5 @@
 #include "../includes/Global.hpp"
+#include <csignal>
 #include <iostream>
 #include <vector>
 
@@ -56,7 +57,7 @@ void Server::ClearClients(int fd)
 
 void Server::SignalHandler(int signum)
 {
-	(void)signum;
+    (void)signum;
 	std::cout << "Signal received" << std::endl;
 	_signal = true;
 }
@@ -507,5 +508,6 @@ void Server::SendQuittingMessage(Client *client)
         {
             (*it)->SendMsg(msg);
         }
+        channel->removeClient(client);
     }
 }
