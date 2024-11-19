@@ -9,6 +9,7 @@ class Client
 		bool _auth;
 		std::string _nick;
 		std::string _username;
+		std::string _buffer;
 	public :
 	   // Constructors
 	   Client();
@@ -22,6 +23,7 @@ class Client
 	   std::string GetNick();
 	   std::string GetUsername();
 	   bool GetAuth();
+	   std::string GetBuffer();
 
 	   // Setters
 	   void SetFd(int fd);
@@ -29,6 +31,7 @@ class Client
 	   void SetNick(std::string nick);
 	   void SetUsername(std::string username);
 	   void SetAuth(bool auth);
+	   void SetBuffer(std::string buffer);
 
 	   // Other member functions
 	   void SendMsg(const std::string &msg);

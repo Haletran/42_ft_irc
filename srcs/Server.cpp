@@ -45,14 +45,16 @@ void Server::ClearClients(int fd)
 			break;
 		}
 	}
-	// for (size_t i = 0; i < _clients.size(); i++)
-	// {
-	// 	if (_clients[i]->GetFd() == fd)
-	// 	{
-	// 		_clients.erase(_clients.begin() + i);
-	// 		break;
-	// 	}
-	// }
+	for (size_t i = 0; i < _clients.size(); i++)
+	{
+		if (_clients[i]->GetFd() == fd)
+		{
+			close(fd);
+			delete _clients[i];
+			_clients.erase(_clients.begin() + i);
+			break;
+		}
+	}
 }
 
 void Server::SignalHandler(int signum)
@@ -290,7 +292,7 @@ void Server::printtabclient_fd(std::vector<Client> _clients)
 	}
 }
 
-void Server::ReceiveNewData(int fd)
+/* void Server::ReceiveNewData(int fd)
 {
 	char buffer[10000];
 	memset(buffer, 0, sizeof(buffer));
@@ -308,6 +310,53 @@ void Server::ReceiveNewData(int fd)
 		AuthenticateClient(fd, buffer);
 	else
 		ProcedeMessage(buffer, getClientByFd(fd));
+} */
+
+void Server::ReceiveNewData(int fd)
+{
+    char buffer[10000];
+    memset(buffer, 0, sizeof(buffer));
+    int bytes_read = recv(fd, buffer, sizeof(buffer) - 1, 0);
+
+    if (bytes_read < 0)
+    {
+        std::cout << "Client error on fd: " << fd << std::endl;
+        ClearClients(fd);
+        close(fd);
+        return;
+    }
+
+    Client* client = getClientByFd(fd);
+    if (!client)
+        return;
+
+    if (bytes_read == 0)
+    {
+        std::string stored_buffer = client->GetBuffer();
+        if (!stored_buffer.empty() && stored_buffer.find("\n") != std::string::npos)
+        {
+            if (client->GetAuth() == false || client->GetNick().empty() || client->GetUsername().empty())
+                AuthenticateClient(fd, stored_buffer);
+            else
+                ProcedeMessage(stored_buffer, client);
+            client->SetBuffer("");
+        }
+        return;
+    }
+
+    buffer[bytes_read] = '\0';
+    std::string current_data = buffer;
+    std::string complete_data = client->GetBuffer() + current_data;
+    if (complete_data.find("\n") == std::string::npos)
+    {
+        client->SetBuffer(complete_data);
+        return;
+    }
+    client->SetBuffer("");
+    if (client->GetAuth() == false || client->GetNick().empty() || client->GetUsername().empty())
+        AuthenticateClient(fd, complete_data);
+    else
+        ProcedeMessage(complete_data, client);
 }
 
 Client *Server::getClientByFd(int fd)

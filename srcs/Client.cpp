@@ -82,6 +82,15 @@ std::string Client::getNickname()
 	return _nick;
 }
 
+std::string Client::GetBuffer()
+{
+    return _buffer;
+}
+
+void Client::SetBuffer(std::string buffer)
+{
+    _buffer = buffer;
+}
 
 Client::~Client()
 {

@@ -189,8 +189,6 @@ void Server::ModeCommand(t_input *input)
 
 void Server::PartCommand(t_input *input)
 {
-    std::cout << "PART COMMAND" << std::endl;
-
     Channel* channel = getChannelByName(input->channel);
     if (_channels[channel].size() == 1)
     {
@@ -212,5 +210,4 @@ void Server::PartCommand(t_input *input)
         channelClients.end()
     );
     input->client->SendMsg(PART_MSG);
-    std::cerr << "PART COMMAND" << std::endl;
 }
