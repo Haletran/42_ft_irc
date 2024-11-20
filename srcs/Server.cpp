@@ -1,7 +1,4 @@
 #include "../includes/Global.hpp"
-#include <csignal>
-#include <iostream>
-#include <vector>
 
 bool Server::_signal = false;
 

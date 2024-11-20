@@ -1,25 +1,6 @@
 #pragma once
 
 #include "Global.hpp"
-#include <cstring>
-#include <cstdio>
-#include <cstdlib>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <netdb.h>
-#include <unistd.h>
-#include <dirent.h>
-#include <fstream>
-#include <vector>
-#include <string>
-#include <dirent.h>
-#include <algorithm>
-#include <ctime>
-#include <unistd.h>
-#include <iomanip>
-#include <sstream>
-#include <csignal>
-#include <fstream>
 
 class Bot {
     private:
