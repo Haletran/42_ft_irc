@@ -1,6 +1,6 @@
 #include "../includes/Global.hpp"
 
-Channel::Channel() : _channel_name("#general"),  _topic("Nothing particular"), _invite_only(false), _password(NULL), _user_limit(std::numeric_limits<int>::max())
+Channel::Channel() : _channel_name("#general"),  _topic(""), _invite_only(false), _password(NULL), _user_limit(std::numeric_limits<int>::max())
 {
     this->_topic_change = true;
     std::stringstream ss;
@@ -18,7 +18,7 @@ Channel::Channel(std::string channel_name)
     else
     {
         _channel_name = channel_name;
-        _topic = "Nothing particular";
+        _topic = "";
         _invite_only = false;
 		_password = "";
 		password_needed = false;
