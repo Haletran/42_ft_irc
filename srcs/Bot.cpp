@@ -55,7 +55,6 @@ void Bot::login() {
     send_message("USER " + nickname + " 0 * :" + nickname);
     sleep(1);
     send_message("JOIN " + channel);
-    //send_message("TOPIC " + channel + " :🎮 Welcome to the game Channel :) !");
 }
 
 void Bot::printFile(std::string filename) {

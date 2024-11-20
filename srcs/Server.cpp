@@ -13,22 +13,16 @@ Server::Server()
 Server::~Server()
 {
     CleanServer();
-    std::cerr << "Server down" << std::endl;
 }
 
 void Server::CleanServer()
 {
-    std::cerr << "Cleaning server" << std::endl;
     for (std::vector<Client*>::iterator it = _clients.begin(); it != _clients.end(); ++it) {
         delete *it;
     }
     _clients.clear();
     std::map<Channel*, std::vector<Client*> >::iterator it;
     for (it = _channels.begin(); it != _channels.end(); ++it) {
-        // std::vector<Client*>::iterator clientIt;
-        // for (clientIt = it->second.begin(); clientIt != it->second.end(); ++clientIt) {
-        //     delete *clientIt;
-        // }
         it->second.clear();
         delete it->first;
     }
@@ -50,7 +44,7 @@ void Server::ClearClients(int fd)
 		if (_clients[i]->GetFd() == fd)
 		{
 			close(fd);
-			delete _clients[i];
+			delete _clients[i]; // leaks if rejoin the channel after
 			_clients.erase(_clients.begin() + i);
 			break;
 		}
@@ -73,7 +67,6 @@ void Server::CloseFds()
 	}
 	if (_server_socket != -1)
 	{
-		std::cout << "Closing server socket" << std::endl;
 		close(_server_socket);
 	}
 }
@@ -83,21 +76,21 @@ void Server::SerSocket()
 	struct sockaddr_in server_addr;
 	struct pollfd newpoll;
 	memset(&newpoll, 0, sizeof(newpoll));
-	server_addr.sin_family = AF_INET; // IPv4
-	server_addr.sin_addr.s_addr = INADDR_ANY; // Any local IP
-	server_addr.sin_port = htons(_port); // convert Port
+	server_addr.sin_family = AF_INET;
+	server_addr.sin_addr.s_addr = INADDR_ANY;
+	server_addr.sin_port = htons(_port);
 
-	_server_socket = socket(AF_INET, SOCK_STREAM, 0); //set socket and returns fd
+	_server_socket = socket(AF_INET, SOCK_STREAM, 0);
 	if (_server_socket == -1)
 		throw std::runtime_error("Failed to create socket");
 	int opt = 1;
-	if (setsockopt(_server_socket, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt)) == -1) // Reuse address and port
+	if (setsockopt(_server_socket, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt)) == -1)
 		throw std::runtime_error("Failed to set socket options");
-	if (fcntl(_server_socket, F_SETFL, O_NONBLOCK) == -1) // Set non-blocking
+	if (fcntl(_server_socket, F_SETFL, O_NONBLOCK) == -1)
 		throw std::runtime_error("Failed to set non-blocking");
-	if (bind(_server_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)) == -1) // Bind socket
+	if (bind(_server_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)) == -1)
 		throw std::runtime_error("Failed to bind socket");
-	if (listen(_server_socket, SOMAXCONN) == -1) // Listen for connections and making passive socket
+	if (listen(_server_socket, SOMAXCONN) == -1)
 		throw std::runtime_error("Failed to listen for connections");
 	newpoll.fd = _server_socket;
 	newpoll.events = POLLIN;
@@ -123,11 +116,11 @@ void Server::ServerInit(int port, std::string pwd)
 	{
 		if ((poll(&_pollfds[0], _pollfds.size(), -1) == -1) && _signal == false)
 			throw std::runtime_error("Failed to poll");
-		for (size_t i = 0; i < _pollfds.size(); i++) // check all fds for event, -1 means block until event
+		for (size_t i = 0; i < _pollfds.size(); i++)
 		{
-			if (_pollfds[i].revents & POLLIN) //check for data to read
+			if (_pollfds[i].revents & POLLIN)
 			{
-				if (_pollfds[i].fd == _server_socket) // check if server socket
+				if (_pollfds[i].fd == _server_socket)
 					AcceptClient();
 				else
 					ReceiveNewData(_pollfds[i].fd);
@@ -136,17 +129,13 @@ void Server::ServerInit(int port, std::string pwd)
 	}
 	CloseFds();
 }
+
 bool Server::isValidUsername(const std::string& username)
 {
-    // Check length
     if (username.empty() || username.length() > 9)
         return false;
-
-    // Check first character
     if (username[0] == '$' || username[0] == ':')
         return false;
-
-    // Check invalid characters
     for (size_t i = 0; i < username.length(); i++) {
         char c = username[i];
         if (c == ' ' || c == '\0' || c == '\r' || c == '\n' || c == '@')
@@ -240,10 +229,10 @@ void Server::AuthenticateClient(int fd, std::string buffer)
                         std::stringstream ss;
                 		ss << username << i;
                 		user_copy = ss.str();
-                        if(get_ClientByUsername(user_copy) == NULL)
+                        if (get_ClientByUsername(user_copy) == NULL)
                         {
                             client->SetUsername(user_copy);
-                            username = user_copy; // Update username for the message
+                            username = user_copy;
                             break;
                         }
                         i++;
@@ -264,15 +253,14 @@ void Server::AcceptClient()
 	struct sockaddr_in client_addr;
 	struct pollfd newpoll;
 	socklen_t addr_size = sizeof(client_addr);
-	//int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen); *addr = client address(retreive client ip and port) accept() returns client socket
 
 	bzero(&client_addr, sizeof(client_addr));
 	memset(&newpoll, 0, sizeof(newpoll));
-	int new_fd = accept(_server_socket, (struct sockaddr *)&client_addr, &addr_size); // accept connection
+	int new_fd = accept(_server_socket, (struct sockaddr *)&client_addr, &addr_size);
 	if (new_fd == -1)
-		{std::cerr << "Failed to accept connection" << std::endl;return;} // delete client if failed
-	if (fcntl(new_fd, F_SETFL, O_NONBLOCK) == -1) // set non-blocking
-		{std::cerr << "Failed to set non-blocking" << std::endl; close(new_fd); return;} // delete client if failed
+		{std::cerr << "Failed to accept connection" << std::endl;return;}
+	if (fcntl(new_fd, F_SETFL, O_NONBLOCK) == -1)
+		{std::cerr << "Failed to set non-blocking" << std::endl; close(new_fd); return;}
 	newpoll.fd = new_fd;
 	newpoll.events = POLLIN;
 	newpoll.revents = 0;
@@ -292,29 +280,9 @@ void Server::printtabclient_fd(std::vector<Client> _clients)
 	}
 }
 
-/* void Server::ReceiveNewData(int fd)
-{
-	char buffer[10000];
-	memset(buffer, 0, sizeof(buffer));
-	int bytes_read = recv(fd, buffer, sizeof(buffer) - 1, 0); // read data from client
-	if (bytes_read <= 0)
-	{
-		std::cout << "Client disconnected: " << fd << std::endl;
-		ClearClients(fd);
-		close(fd);
-		return;
-	}
-	else
-		buffer[bytes_read] = '\0';
-	if (getClientByFd(fd)->GetAuth() == false || getClientByFd(fd)->GetNick().empty() || getClientByFd(fd)->GetUsername().empty())
-		AuthenticateClient(fd, buffer);
-	else
-		ProcedeMessage(buffer, getClientByFd(fd));
-} */
-
 void Server::ReceiveNewData(int fd)
 {
-    char buffer[10000];
+    char buffer[7000];
     memset(buffer, 0, sizeof(buffer));
     int bytes_read = recv(fd, buffer, sizeof(buffer) - 1, 0);
 
@@ -369,81 +337,15 @@ Client *Server::getClientByFd(int fd)
 	return NULL;
 }
 
-void Server::JoinChannel(const std::string &channel_name, Client *client, std::string parameters)
-{
-    if (!client->GetAuth() || client->GetNick().empty() || client->GetUsername().empty())
-    {
-        std::cerr << "Client is not fully authenticated: " << client->GetFd() << std::endl;
-        return;
-    }
-    std::string trimmed_channel_name = trimNewline(channel_name);
-    Channel* channel = getChannelByName(trimmed_channel_name);
-    if (channel != NULL)
-    {
-        if (channel->getInvite() == true && channel->IsInvited(client) == false)
-        {
-            client->SendMsg(INVITE_ONLY_ERROR);
-            return;
-        }
-        else if (channel->getPasswordNeeded() == true)
-        {
-            if (parameters.compare(getChannelByName(channel_name)->getPassword()) != 0)
-            {
-                client->SendMsg(BAD_KEY_ERROR);
-                return;
-            }
-        }
-        else if (channel->getNbUser() + 1 >=  channel->getlimit())
-        {
-            client->SendMsg(CHANNEL_FULL_ERROR);
-            return;
-        }
-        else if (channel->isAlreadyConnected(client))
-        {
-            client->SendMsg(ALREADY_IN_CHANNEL_ERROR);
-            return;
-        }
-        _channels[channel].push_back(client);
-        for (std::vector<Client*>::iterator it = _channels[channel].begin(); it != _channels[channel].end(); ++it)
-            (*it)->SendMsg(JOIN_MSG);
-        channel->getAllUser(client);
-        client->SendMsg(NEW_CHANNEL_MSG);
-        client->SendMsg(END_OF_NAMES_MSG);
-    }
-    else
-    {
-        try
-        {
-            Channel* channel = new Channel(trimmed_channel_name);
-            _channels[channel].push_back(client);
-            channel->addOperators(client);
-            client->SendMsg(JOIN_MSG);
-            client->SendMsg(NEW_CHANNEL_MSG);
-            client->SendMsg(END_OF_NAMES_MSG);
-        }
-        catch (Channel::ChannelException &e)
-        {
-            std::cerr << e.what() << std::endl;
-            std::string errMsg = "Error: " + std::string(e.what()) + "\r\n";
-            client->SendMsg(errMsg);
-            return;
-        }
-    }
-}
-
 void Server::SendInfos(const std::string &channel_name, Client *client)
 {
     std::string trimmed_channel_name = trimNewline(channel_name);
     Channel* channel = getChannelByName(trimmed_channel_name);
 
-    // fix : do not send the message a second time when rejoining the channel
     client->SendMsg(MODE_JOIN);
     client->SendMsg(FLAG_MSG);
     client->SendMsg(CREATION_TIME);
-    // send who list of user
 }
-
-
 
 void Server::LeaveChannel(const std::string &channel_name, Client *client)
 {
@@ -455,7 +357,8 @@ void Server::LeaveChannel(const std::string &channel_name, Client *client)
         {
             if (*it == client)
             {
-                clients.erase(it);
+                channel->removeClient(*it);
+                channel->removeOperator(*it);
                 std::string msg = "Client left channel " + channel_name + "\n";
                 send(client->GetFd(), msg.c_str(), msg.length(), 0);
                 break;
@@ -535,28 +438,4 @@ Channel *Server::getCurrentChannel(Client *client){
         }
     }
     return NULL;
-}
-
-
-void Server::SendQuittingMessage(Client *client)
-{
-    Channel* channel = getCurrentChannel(client);
-    std::string msg = ":" + client->GetNick() + "!~" + client->GetUsername() + "@localhost QUIT :Client Quit\r\n";
-    if (channel != NULL)
-    {
-        std::vector<Client*>& clients = _channels[channel];
-        for (std::vector<Client*>::iterator it = clients.begin(); it != clients.end(); ++it)
-        {
-            if (*it == client)
-            {
-                clients.erase(it);
-                break;
-            }
-        }
-        for (std::vector<Client*>::iterator it = clients.begin(); it != clients.end(); ++it)
-        {
-            (*it)->SendMsg(msg);
-        }
-        channel->removeClient(client);
-    }
 }

@@ -13,13 +13,12 @@ int main(int argc, char **argv)
 	{
 		signal(SIGINT, Server::SignalHandler);
 		signal(SIGQUIT, Server::SignalHandler);
-		// need to fix CTRL+D not working properly
 		server.ServerInit(atoi(argv[1]), argv[2]);
 	}
 	catch(const std::exception& e)
 	{
 		std::cerr << e.what() << '\n';
 	}
-	std::cout << "Server closed" << std::endl;
+	std::cout << "\033[1;31mServer down\033[0m";
 	return 0;
 }

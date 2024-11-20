@@ -29,10 +29,13 @@ void Server::InviteCommand(t_input *input)
 
 void Server::KickCommand(t_input *input)
 {
-    if (getChannelByName(input->channel)->IsOP(input->client) == false)
-      input->client->SendMsg(NOT_OP);
-    else
-      KickFromChannel(input->channel, input->parameters, input->client);
+    if (getChannelByName(input->channel) != NULL)
+    {
+        if (getChannelByName(input->channel)->IsOP(input->client) == false)
+        input->client->SendMsg(NOT_OP);
+        else
+        KickFromChannel(input->channel, input->parameters, input->client);
+    }
 }
 
 void Server::MsgCommand(t_input *input)
@@ -210,4 +213,125 @@ void Server::PartCommand(t_input *input)
         channelClients.end()
     );
     input->client->SendMsg(PART_MSG);
+}
+
+
+void Server::JoinChannel(const std::string &channel_name, Client *client, std::string parameters)
+{
+    if (!client->GetAuth() || client->GetNick().empty() || client->GetUsername().empty())
+    {
+        std::cerr << "Client is not fully authenticated: " << client->GetFd() << std::endl;
+        return;
+    }
+    std::string trimmed_channel_name = trimNewline(channel_name);
+    Channel* channel = getChannelByName(trimmed_channel_name);
+    if (channel != NULL)
+    {
+        if (channel->getInvite() == true && channel->IsInvited(client) == false)
+        {
+            client->SendMsg(INVITE_ONLY_ERROR);
+            return;
+        }
+        else if (channel->getPasswordNeeded() == true)
+        {
+            if (parameters.compare(getChannelByName(channel_name)->getPassword()) != 0)
+            {
+                client->SendMsg(BAD_KEY_ERROR);
+                return;
+            }
+        }
+        else if (channel->getNbUser() + 1 >=  channel->getlimit())
+        {
+            client->SendMsg(CHANNEL_FULL_ERROR);
+            return;
+        }
+        else if (channel->isAlreadyConnected(client))
+        {
+            client->SendMsg(ALREADY_IN_CHANNEL_ERROR);
+            return;
+        }
+        _channels[channel].push_back(client);
+        for (std::vector<Client*>::iterator it = _channels[channel].begin(); it != _channels[channel].end(); ++it)
+            (*it)->SendMsg(JOIN_MSG);
+        channel->getAllUser(client);
+        client->SendMsg(NEW_CHANNEL_MSG);
+        client->SendMsg(END_OF_NAMES_MSG);
+    }
+    else
+    {
+        try
+        {
+            Channel* channel = new Channel(trimmed_channel_name);
+            _channels[channel].push_back(client);
+            channel->addOperators(client);
+            client->SendMsg(JOIN_MSG);
+            client->SendMsg(NEW_CHANNEL_MSG);
+            client->SendMsg(END_OF_NAMES_MSG);
+        }
+        catch (Channel::ChannelException &e)
+        {
+            std::cerr << e.what() << std::endl;
+            std::string errMsg = "Error: " + std::string(e.what()) + "\r\n";
+            client->SendMsg(errMsg);
+            return;
+        }
+    }
+}
+
+
+void Server::SendQuittingMessage(Client *client)
+{
+    Channel* channel = getCurrentChannel(client);
+    std::string msg = ":" + client->GetNick() + "!~" + client->GetUsername() + "@localhost QUIT :Client Quit\r\n";
+    if (channel != NULL)
+    {
+        std::vector<Client*>& clients = _channels[channel];
+        for (std::vector<Client*>::iterator it = clients.begin(); it != clients.end(); ++it)
+        {
+            if (*it == client)
+            {
+                clients.erase(it);
+                break;
+            }
+        }
+        for (std::vector<Client*>::iterator it = clients.begin(); it != clients.end(); ++it)
+        {
+            (*it)->SendMsg(msg);
+        }
+        channel->removeClient(client);
+        channel->removeOperator(client);
+        if (channel->getNbUser() == 0)
+        {
+            _channels.erase(channel);
+            delete channel;
+        }
+    }
+}
+
+void Server::KickFromChannel(const std::string &channel,
+                             const std::string &nickname, Client *client)
+{
+  std::string nick = trimNewline(nickname);
+  Channel *channelPtr = getChannelByName(channel);
+  if (channelPtr == NULL)
+  {
+    client->SendMsg(CHANNEL_NOT_FOUND);
+    return;
+  }
+  std::vector<Client *> &clientsInChannel = _channels[channelPtr];
+  for (std::vector<Client *>::iterator clientIt = clientsInChannel.begin();
+       clientIt != clientsInChannel.end(); ++clientIt)
+  {
+    if ((*clientIt)->GetNick() == nick)
+    {
+      for (std::vector<Client *>::iterator notifyIt = clientsInChannel.begin();
+           notifyIt != clientsInChannel.end(); ++notifyIt)
+      {
+        (*notifyIt)->SendMsg(KICK_MSG);
+      }
+      LeaveChannel(channel, *clientIt);
+      return;
+    }
+  }
+  client->SendMsg(USER_NOT_ON_CHANNEL);
 }

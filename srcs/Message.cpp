@@ -61,7 +61,6 @@ void Server::executeCommand(t_input *input)
   case 8: // QUIT
   {
     SendQuittingMessage(input->client);
-    close(input->client->GetFd());
     ClearClients(input->client->GetFd());
     break;
   }
@@ -115,34 +114,6 @@ void Server::SendMessageToSomeone(Client *client, std::string msg_content, std::
     }
   }
   client->SendMsg("User " + nickname + " not found.\r\n");
-}
-
-void Server::KickFromChannel(const std::string &channel,
-                             const std::string &nickname, Client *client)
-{
-  std::string nick = trimNewline(nickname);
-  Channel *channelPtr = getChannelByName(channel);
-  if (channelPtr == NULL)
-  {
-    client->SendMsg(CHANNEL_NOT_FOUND);
-    return;
-  }
-  std::vector<Client *> &clientsInChannel = _channels[channelPtr];
-  for (std::vector<Client *>::iterator clientIt = clientsInChannel.begin();
-       clientIt != clientsInChannel.end(); ++clientIt)
-  {
-    if ((*clientIt)->GetNick() == nick)
-    {
-      for (std::vector<Client *>::iterator notifyIt = clientsInChannel.begin();
-           notifyIt != clientsInChannel.end(); ++notifyIt)
-      {
-        (*notifyIt)->SendMsg(KICK_MSG);
-      }
-      LeaveChannel(channel, *clientIt);
-      return;
-    }
-  }
-  client->SendMsg(USER_NOT_ON_CHANNEL);
 }
 
 int Server::GetCommand(std::string command)

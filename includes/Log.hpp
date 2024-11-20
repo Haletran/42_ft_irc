@@ -30,6 +30,6 @@
 #define END_OF_NAMES_MSG ":localhost 366 " + client->getNickname() + " " + channel->GetChannelName() + " :End of /NAMES list.\r\n"
 #define PRIV_MSG ":" + client->GetUsername() + "!~" + client->getNickname() + "@localhost PRIVMSG " + nickname + " :" + msg_content + "\r\n"
 #define SEND_DEBUG "\033[32m>>\033[0m " << _fd << " " << trimNewline(msg)
-#define PART_MSG ":" + input->client->GetUsername() + "!~" + input->client->getNickname() + "@localhost PART " + input->channel + "\r\n"
+#define PART_MSG ":" + input->client->GetNick() + "!~" + input->client->GetUsername() + "@localhost PART " + input->channel + "\r\n"
 
 #define OPERATOR_ERROR "Impossible to add client to list of operators"

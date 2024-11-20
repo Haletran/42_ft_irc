@@ -160,7 +160,6 @@ int Channel::getlimit()
 
 }
 
-
 void Channel::addOperators(Client *client)
 {
     if (!client)
@@ -190,7 +189,6 @@ void Channel::getAllUser(Client *client)
     }
     client->SendMsg(LIST_USER);
 }
-
 
 bool Channel::IsOP(Client *client)
 {
