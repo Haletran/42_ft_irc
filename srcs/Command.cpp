@@ -285,28 +285,35 @@ void Server::SendQuittingMessage(Client *client)
     std::string msg = ":" + client->GetNick() + "!~" + client->GetUsername() + "@localhost QUIT :Client Quit\r\n";
     if (channel != NULL)
     {
-        std::vector<Client*>& clients = _channels[channel];
-        for (std::vector<Client*>::iterator it = clients.begin(); it != clients.end(); ++it)
+        while (getCurrentChannel(client))
         {
-            if (*it == client)
+            Channel* channel = getCurrentChannel(client);
+            std::vector<Client*>& clients = _channels[channel];
+            for (std::vector<Client*>::iterator it = clients.begin(); it != clients.end(); ++it)
             {
-                clients.erase(it);
-                break;
+                if (*it == client)
+                {
+                    channel->removeClient(*it);
+                    channel->removeOperator(*it);
+                    clients.erase(it);
+                    break;
+                }
             }
-        }
-        for (std::vector<Client*>::iterator it = clients.begin(); it != clients.end(); ++it)
-        {
-            (*it)->SendMsg(msg);
-        }
-        channel->removeClient(client);
-        channel->removeOperator(client);
-        if (channel->getNbUser() == 0)
-        {
-            _channels.erase(channel);
-            delete channel;
+            for (std::vector<Client*>::iterator it = clients.begin(); it != clients.end(); ++it)
+            {
+                (*it)->SendMsg(msg);
+            }
+            channel->removeClient(client);
+            channel->removeOperator(client);
+            if (channel->getNbUser() == 0)
+            {
+                _channels.erase(channel);
+                delete channel;
+            }
         }
     }
 }
+
 
 void Server::KickFromChannel(const std::string &channel,
                              const std::string &nickname, Client *client)

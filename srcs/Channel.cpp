@@ -151,7 +151,7 @@ bool Channel::getPasswordNeeded()
 
 int Channel::getNbUser() const
 {
-    return (_clients.size());
+    return (_clients.size() + _operators.size());
 }
 
 int Channel::getlimit()
