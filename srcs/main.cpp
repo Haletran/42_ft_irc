@@ -15,10 +15,10 @@ int main(int argc, char **argv)
 		signal(SIGQUIT, Server::SignalHandler);
 		server.ServerInit(atoi(argv[1]), argv[2]);
 	}
-	catch(const std::exception& e)
+	catch (const std::exception &e)
 	{
 		std::cerr << e.what() << '\n';
 	}
-	std::cout << "\033[1;31mServer down\033[0m";
+	std::cout << "\033[1;31mServer down\033[0m" << std::endl;
 	return 0;
 }

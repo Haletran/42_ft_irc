@@ -46,3 +46,4 @@ bool parseMessage(const std::string &msg, std::string &command,
 std::string parseChannelName(const std::string &line);
 void clearVector(std::vector<Client*>& vec);
 bool check_invalid_chars(const std::string &str);
+void print_t_input(t_input *input);

@@ -1,6 +1,6 @@
 #include "../includes/Global.hpp"
 
-Channel::Channel() : _channel_name("#general"),  _topic(""), _invite_only(false), _password(NULL), _user_limit(std::numeric_limits<int>::max())
+Channel::Channel() : _channel_name("#general"), _topic(""), _invite_only(false), _password(NULL), _user_limit(std::numeric_limits<int>::max())
 {
     this->_topic_change = true;
     std::stringstream ss;
@@ -20,10 +20,10 @@ Channel::Channel(std::string channel_name)
         _channel_name = channel_name;
         _topic = "";
         _invite_only = false;
-		_password = "";
-		password_needed = false;
-		_topic_change = true;
-		_user_limit = std::numeric_limits<int>::max();
+        _password = "";
+        password_needed = false;
+        _topic_change = true;
+        _user_limit = std::numeric_limits<int>::max();
         std::stringstream ss;
         std::time_t current_time = std::time(0);
         ss << current_time;
@@ -33,12 +33,12 @@ Channel::Channel(std::string channel_name)
 
 std::string Channel::getTopic()
 {
-	return _topic;
+    return _topic;
 }
 
 void Channel::setTopic(std::string topic)
 {
-	_topic = topic;
+    _topic = topic;
 }
 
 void Channel::setInviteOnly(bool invite_only)
@@ -46,11 +46,10 @@ void Channel::setInviteOnly(bool invite_only)
     _invite_only = invite_only;
 }
 
-void  Channel::setPassword(std::string password)
+void Channel::setPassword(std::string password)
 {
     _password = password;
 }
-
 
 void Channel::setTopicChange(bool value)
 {
@@ -61,7 +60,6 @@ bool Channel::getTopicChange()
 {
     return (_topic_change);
 }
-
 
 void Channel::setUserLimit(int user_limit)
 {
@@ -75,12 +73,12 @@ void Channel::setPasswordNeeded(bool condition)
 
 const std::string &Channel::GetChannelName()
 {
-	return _channel_name;
+    return _channel_name;
 }
 
 bool Channel::getInvite()
 {
-    return(_invite_only);
+    return (_invite_only);
 }
 
 std::string Channel::getTimeCreated()
@@ -92,7 +90,7 @@ void Channel::removeClient(Client *client)
 {
     if (!client)
         throw std::runtime_error("Not found in the channel");
-    for (std::vector<Client*>::iterator it = _clients.begin(); it != _clients.end(); ++it)
+    for (std::vector<Client *>::iterator it = _clients.begin(); it != _clients.end(); ++it)
     {
         if ((*it)->GetUsername() == client->GetUsername())
         {
@@ -102,12 +100,11 @@ void Channel::removeClient(Client *client)
     }
 }
 
-
 void Channel::removeOperator(Client *client)
 {
     if (!client)
         throw std::runtime_error(OPERATOR_ERROR);
-    for (std::vector<Client*>::iterator it = _operators.begin(); it != _operators.end(); ++it)
+    for (std::vector<Client *>::iterator it = _operators.begin(); it != _operators.end(); ++it)
     {
         if ((*it)->GetUsername() == client->GetUsername())
         {
@@ -119,7 +116,7 @@ void Channel::removeOperator(Client *client)
 
 bool Channel::operator==(const std::string &other) const
 {
-        return _channel_name == other;
+    return _channel_name == other;
 }
 
 std::string Channel::getFlag()
@@ -146,7 +143,7 @@ std::string Channel::getPassword()
 
 bool Channel::getPasswordNeeded()
 {
-    return(password_needed);
+    return (password_needed);
 }
 
 int Channel::getNbUser() const
@@ -157,7 +154,6 @@ int Channel::getNbUser() const
 int Channel::getlimit()
 {
     return (_user_limit);
-
 }
 
 void Channel::addOperators(Client *client)
@@ -167,7 +163,7 @@ void Channel::addOperators(Client *client)
     _operators.push_back(client);
 }
 
-void Channel::addInvited(Client* client)
+void Channel::addInvited(Client *client)
 {
     if (!client)
         throw std::runtime_error("Client pointer is null");
@@ -179,11 +175,11 @@ void Channel::getAllUser(Client *client)
     std::string array_op;
     std::string array_user;
     _clients.push_back(client);
-    for (std::vector<Client*>::iterator it = _operators.begin(); it != _operators.end(); ++it)
+    for (std::vector<Client *>::iterator it = _operators.begin(); it != _operators.end(); ++it)
     {
         array_op += "@" + (*it)->getNickname() + " ";
     }
-    for (std::vector<Client*>::iterator it = _clients.begin(); it != _clients.end(); ++it)
+    for (std::vector<Client *>::iterator it = _clients.begin(); it != _clients.end(); ++it)
     {
         array_user += (*it)->getNickname() + " ";
     }
@@ -193,7 +189,7 @@ void Channel::getAllUser(Client *client)
 bool Channel::IsOP(Client *client)
 {
     std::string username = client->GetUsername();
-    for (std::vector<Client*>::iterator it = _operators.begin(); it != _operators.end(); ++it)
+    for (std::vector<Client *>::iterator it = _operators.begin(); it != _operators.end(); ++it)
     {
         if ((*it)->GetUsername() == username)
         {
@@ -203,10 +199,10 @@ bool Channel::IsOP(Client *client)
     return false;
 }
 
-bool Channel::IsInvited(Client*client)
+bool Channel::IsInvited(Client *client)
 {
     std::string username = client->GetUsername();
-    for (std::vector<Client*>::iterator it = _invited_clients.begin(); it != _invited_clients.end(); ++it)
+    for (std::vector<Client *>::iterator it = _invited_clients.begin(); it != _invited_clients.end(); ++it)
     {
         if ((*it)->GetUsername() == username)
             return true;
@@ -217,12 +213,12 @@ bool Channel::IsInvited(Client*client)
 bool Channel::isAlreadyConnected(Client *client)
 {
     std::string nick = client->GetNick();
-    for (std::vector<Client*>::iterator it = _clients.begin(); it != _clients.end(); ++it)
+    for (std::vector<Client *>::iterator it = _clients.begin(); it != _clients.end(); ++it)
     {
         if ((*it)->GetNick() == nick)
             return true;
     }
-    for (std::vector<Client*>::iterator it = _operators.begin(); it != _operators.end(); ++it)
+    for (std::vector<Client *>::iterator it = _operators.begin(); it != _operators.end(); ++it)
     {
         if ((*it)->GetNick() == nick)
             return true;
@@ -237,9 +233,13 @@ void Channel::CleanChannel(Channel *chan)
     clearVector(chan->_invited_clients);
 }
 
-
 Channel::~Channel()
 {
     CleanChannel(this);
     std::cerr << "Channel " << _channel_name << " has been deleted" << std::endl;
+}
+
+std::string Channel::getChannelName()
+{
+    return (_channel_name);
 }
