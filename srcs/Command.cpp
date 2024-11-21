@@ -138,6 +138,8 @@ void Server::ModeCommand(t_input *input)
       }
     }
   }
+  if (flag == -1)
+    return;
   if (input->parameters.size() > 1 && input->parameters.at(0) == '+')
   {
     switch (flag)
