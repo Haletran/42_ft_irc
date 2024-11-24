@@ -61,6 +61,10 @@ void Server::MsgCommand(t_input *input)
 
 void Server::TopicCommand(t_input *input)
 {
+  if (input ->channel[0] != '#')
+  {
+    return;
+  }
   Channel *chan = getChannelByName(input->channel);
   if (chan->getTopicChange() == false && chan->IsOP(input->client))
   {
@@ -114,7 +118,7 @@ void Server::TopicCommand(t_input *input)
   }
 }
 
-void Server::ModeCommand(t_input *input)
+/* void Server::ModeCommand(t_input *input)
 {
   std::string mode_array = "itklo";
   int flag = -1;
@@ -198,6 +202,287 @@ void Server::ModeCommand(t_input *input)
            _channels[getChannelByName(input->channel)].begin();
        it != _channels[getChannelByName(input->channel)].end(); ++it)
     (*it)->SendMsg(MODE_MESSAGE);
+} */
+
+/* void Server::ModeCommand(t_input *input)
+{
+    std::string mode_array = "itklo";
+    int flag = -1;
+    
+    if (input->parameters.empty())
+        return;  
+    Channel* channel = getChannelByName(input->channel);
+    if (!channel)
+        return;  
+    if (!channel->IsOP(input->client))
+    {
+        input->client->SendMsg(NOT_OP);
+        return;
+    }
+    if (input->parameters.length() > 1)
+    {
+        char mode_char = input->parameters[1];
+        for (int i = 0; i < static_cast<int>(mode_array.length()); ++i)
+        {
+            if (mode_array[i] == mode_char)
+            {
+                flag = i;
+                break;
+            }
+        }
+    }
+
+    if (flag == -1)
+        return;
+    std::string modeMsg = ":";
+    modeMsg = modeMsg + input->client->GetNick() + " MODE " + channel->GetChannelName() + " ";
+    if (input->parameters.length() > 1 && input->parameters[0] == '+')
+    {
+        switch (flag)
+        {
+            case 0:
+                channel->setInviteOnly(true);
+                modeMsg = modeMsg + "+i";
+                break;
+            case 1:
+                channel->setTopicChange(false);
+                modeMsg = modeMsg + "+t";
+                break;
+            case 2:
+                if (input->parameters.length() > 3)
+                {
+                    std::string pass = input->parameters.substr(3);
+                    channel->setPassword(pass);
+                    channel->setPasswordNeeded(true);
+                    modeMsg = modeMsg + "+k " + pass;
+                }
+                break;
+            case 3:
+                if (input->parameters.length() > 3)
+                {
+                    std::stringstream ss;
+                    int limit = atoi(input->parameters.substr(3).c_str());
+                    channel->setUserLimit(limit);
+                    ss << limit;
+                    modeMsg = modeMsg + "+l " + ss.str();
+                }
+                break;
+            case 4:
+                if (input->parameters.length() > 3)
+                {
+                    std::string username = trimNewline(input->parameters.substr(3));
+                    Client* target = get_ClientByNickname(username);
+                    if (target)
+                    {
+                        channel->addOperators(target);
+                        modeMsg = modeMsg + "+o " + username;
+                    }
+                }
+                break;
+        }
+    }
+    else if (input->parameters.length() > 1 && input->parameters[0] == '-')
+    {
+        switch (flag)
+        {
+            case 0:
+                channel->setInviteOnly(false);
+                modeMsg = modeMsg + "-i";
+                break;
+            case 1:
+                channel->setTopicChange(true);
+                modeMsg = modeMsg + "-t";
+                break;
+            case 2:
+                if (input->parameters.length() > 3 && 
+                    input->parameters.substr(3) == channel->getPassword())
+                {
+                    channel->setPasswordNeeded(false);
+                    modeMsg = modeMsg + "-k";
+                }
+                break;
+            case 3:
+                channel->setUserLimit(std::numeric_limits<int>::max());
+                modeMsg = modeMsg + "-l";
+                break;
+            case 4:
+                if (input->parameters.length() > 3)
+                {
+                    std::string username = trimNewline(input->parameters.substr(3));
+                    Client* target = get_ClientByNickname(username);
+                    if (target)
+                    {
+                        channel->removeOperator(target);
+                        modeMsg = modeMsg + "-o " + username;
+                    }
+                }
+                break;
+        }
+    }
+    std::vector<Client*>::iterator it;
+    for (it = _channels[channel].begin(); it != _channels[channel].end(); ++it)
+    {
+        (*it)->SendMsg(modeMsg + "\r\n");
+    }
+} */
+
+void Server::ModeCommand(t_input *input)
+{
+    std::string mode_array = "itklo";
+    int flag = -1;
+    
+    if (input->parameters.empty())
+        return;  
+    Channel* channel = getChannelByName(input->channel);
+    if (!channel)
+        return;  
+    if (!channel->IsOP(input->client))
+    {
+        input->client->SendMsg(NOT_OP);
+        return;
+    }
+    if (input->parameters.length() > 1)
+    {
+        char mode_char = input->parameters[1];
+        for (int i = 0; i < static_cast<int>(mode_array.length()); ++i)
+        {
+            if (mode_array[i] == mode_char)
+            {
+                flag = i;
+                break;
+            }
+        }
+    }
+
+    if (flag == -1)
+        return;
+    std::string modeMsg = ":" + input->client->GetNick() + "!" + input->client->GetUsername() + "@localhost MODE " + channel->GetChannelName() + " ";
+    if (input->parameters.length() > 1 && input->parameters[0] == '+')
+    {
+        switch (flag)
+        {
+            case 0:
+                channel->setInviteOnly(true);
+                modeMsg = modeMsg + "+i";
+                break;
+            case 1:
+                channel->setTopicChange(false);
+                modeMsg = modeMsg + "+t";
+                break;
+            case 2:
+                if (input->parameters.length() <= 3)
+                {
+                    input->client->SendMsg(":" + channel->GetChannelName() + " 696 " + input->client->GetNick() + " " + channel->GetChannelName() + " k * :You must specify a parameter for the key mode\r\n");
+                    return;
+                }
+                else
+                {
+                    std::string pass = input->parameters.substr(3);
+                    channel->setPassword(pass);
+                    channel->setPasswordNeeded(true);
+                    modeMsg = modeMsg + "+k " + pass;
+                }
+                break;
+            case 3:
+                if (input->parameters.length() <= 3)
+                {
+                    input->client->SendMsg(":" + channel->GetChannelName() + " 696 " + input->client->GetNick() + " " + channel->GetChannelName() + " l * :You must specify a parameter for the limit mode\r\n");
+                    return;
+                }
+                else
+                {
+                    std::stringstream ss;
+                    int limit = atoi(input->parameters.substr(3).c_str());
+                    if (limit <= 0)
+                    {
+                        input->client->SendMsg(":server 461 " + input->client->GetNick() + " MODE :Invalid limit value\r\n");
+                        return;
+                    }
+                    channel->setUserLimit(limit);
+                    ss << limit;
+                    modeMsg = modeMsg + "+l " + ss.str();
+                }
+                break;
+            case 4:
+                if (input->parameters.length() <= 3)
+                {
+                    input->client->SendMsg(":" + channel->GetChannelName() + " 696 " + input->client->GetNick() + " " + channel->GetChannelName() + " o * :You must specify a parameter for the operator mode\r\n");
+                    return;
+                }
+                else
+                {
+                    std::string username = trimNewline(input->parameters.substr(3));
+                    Client* target = get_ClientByNickname(username);
+                    if (!target)
+                    {
+                        input->client->SendMsg(":server 401 " + input->client->GetNick() + " " + username + " :No such nick\r\n");
+                        return;
+                    }
+                    channel->addOperators(target);
+                    modeMsg = modeMsg + "+o " + username;
+                }
+                break;
+        }
+    }
+    else if (input->parameters.length() > 1 && input->parameters[0] == '-')
+    {
+        switch (flag)
+        {
+            case 0:
+                channel->setInviteOnly(false);
+                modeMsg = modeMsg + "-i";
+                break;
+            case 1:
+                channel->setTopicChange(true);
+                modeMsg = modeMsg + "-t";
+                break;
+            case 2:
+                if (input->parameters.length() <= 3)
+                {
+                    input->client->SendMsg(":server 461 " + input->client->GetNick() + " MODE :Not enough parameters for -k\r\n");
+                    return;
+                }
+                if (input->parameters.substr(3) == channel->getPassword())
+                {
+                    channel->setPasswordNeeded(false);
+                    modeMsg = modeMsg + "-k";
+                }
+                else
+                {
+                    input->client->SendMsg(":server 464 " + input->client->GetNick() + " :Invalid password\r\n");
+                    return;
+                }
+                break;
+            case 3:
+                channel->setUserLimit(std::numeric_limits<int>::max());
+                modeMsg = modeMsg + "-l";
+                break;
+            case 4:
+                if (input->parameters.length() <= 3)
+                {
+                    input->client->SendMsg(":server 461 " + input->client->GetNick() + " MODE :Not enough parameters for -o\r\n");
+                    return;
+                }
+                else
+                {
+                    std::string username = trimNewline(input->parameters.substr(3));
+                    Client* target = get_ClientByNickname(username);
+                    if (!target)
+                    {
+                        input->client->SendMsg(":server 401 " + input->client->GetNick() + " " + username + " :No such nick\r\n");
+                        return;
+                    }
+                    channel->removeOperator(target);
+                    modeMsg = modeMsg + "-o " + username;
+                }
+                break;
+        }
+    }
+    std::vector<Client*>::iterator it;
+    for (it = _channels[channel].begin(); it != _channels[channel].end(); ++it)
+    {
+        (*it)->SendMsg(modeMsg + "\r\n");
+    }
 }
 
 void Server::PartCommand(t_input *input)
