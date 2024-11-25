@@ -12,6 +12,7 @@ class Bot {
         std::string password;
         bool send_message(const std::string& message);
         bool isStarted;
+        std::string time_created;
     public:
         Bot(const std::string& ip, const std::string& name);
         ~Bot();

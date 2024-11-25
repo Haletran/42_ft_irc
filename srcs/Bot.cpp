@@ -8,15 +8,22 @@ Bot::Bot(const std::string& ip, const std::string& name) {
     this->channel = "#bot";
     this->password = "mdp";
     this->isStarted = false;
+    std::stringstream ss;
+    std::time_t current_time = std::time(0);
+    ss << current_time;
+    this->time_created = ss.str();
 }
 
 Bot::~Bot() {
     disconnect();
+    std::cout << "\033[1;31m" << nickname << " is now offline\033[0m" << std::endl;
 }
 
 bool Bot::send_message(const std::string& message) {
     std::string msg = message + "\r\n";
-    return send(sockfd, msg.c_str(), msg.size(), 0) >= 0;
+    if (!send(sockfd, msg.c_str(), msg.size(), 0))
+        return (false);
+    return (true);
 }
 
 bool Bot::connect_to_server() {
@@ -43,18 +50,16 @@ bool Bot::connect_to_server() {
         std::cerr << "Error: Unable to connect to server" << std::endl;
         return false;
     }
-
     return true;
 }
 
 void Bot::login() {
-    sleep(1);
     send_message("PASS " + password);
     send_message("NICK " + nickname);
     send_message("USER " + nickname + " 0 * :" + nickname);
-    sleep(1);
     send_message("JOIN " + channel);
     send_message("TOPIC " + channel + " :🎮 Welcome to the game Channel :) !");
+    std::cout << "\033[1;32m" << nickname << " is now online\033[0m" << std::endl;
 }
 
 void Bot::printFile(std::string filename) {
@@ -73,7 +78,6 @@ void Bot::printFile(std::string filename) {
                 break;
             }
         }
-        usleep(8000);
     }
 }
 
@@ -137,7 +141,7 @@ void Bot::receive_messages() {
         if (message.find("!help") != std::string::npos)
             send_message("PRIVMSG " + channel + " :Here are the commands: !help, !ping, !ascii, !bad-apple");
         else if (message.find("!ping") != std::string::npos)
-            send_message("PRIVMSG " + channel + " :PONG");
+            send_message("PRIVMSG " + channel + " :" + nickname +  " is alive and was created at " + time_created);
         else if (message.find("!bad-apple") != std::string::npos)
             renderVideo("includes/BotUtils/bad-apple");
         else if (message.find("quoi") != std::string::npos)
