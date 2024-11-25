@@ -93,3 +93,12 @@ bool check_invalid_chars(const std::string &str)
     }
     return true;
 }
+
+void print_t_input(t_input *input)
+{
+  std::cerr << "Command: " << input->command << std::endl;
+  std::cerr << "Channel: " << input->channel << std::endl;
+  std::cerr << "Client : " << input->client->getNickname() << std::endl;
+  std::cerr << "Parameters: " << input->parameters << std::endl;
+  std::cerr << "Msg: " << input->msg << std::endl;
+}

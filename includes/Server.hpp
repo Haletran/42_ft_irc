@@ -51,6 +51,7 @@ class Server
 	   static void SignalHandler(int signum);
 	   std::string GetPwd();
 	   void SetPwd(std::string pwd);
+	   bool ParsingMode(t_input *input, int & flag, Channel *channel);
 
 		// UTILS
 	   void CloseFds();
