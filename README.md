@@ -1,8 +1,5 @@
 # 42_FT_IRC
 
-[Schema for the project](https://excalidraw.com/#json=txZRLVuHd0XKJGnX15tuu,bFvyTwCpZ81q7YzrV7C1fQ)
-
-
 ## ERRORS
 
 - [x] : if user leaves the channel send a message to every user on the channel that he leaves
@@ -15,6 +12,8 @@
 - [x] : if user is in multiple channel then it remove only one channel instead of all the channel that the user is currently in (leaks currently)
 - [x] : Parsing error in mode command
 - [x] : Invite not working properly
+
+## BOT animation
 
 Script to generate frames for animation :)
 > Note :
