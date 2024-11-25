@@ -23,6 +23,7 @@ bool Bot::send_message(const std::string& message) {
     std::string msg = message + "\r\n";
     if (!send(sockfd, msg.c_str(), msg.size(), 0))
         return (false);
+    usleep(200000);
     return (true);
 }
 

@@ -12,6 +12,7 @@ SRCS = srcs/main.cpp \
 
 OBJ_DIR = obj
 OBJ = $(addprefix $(OBJ_DIR)/, $(SRCS:srcs/%.cpp=%.o))
+OBJ_BONUS = $(OBJ_DIR)/Bot.o
 
 NAME = ircserv
 
@@ -24,10 +25,12 @@ $(OBJ_DIR)/%.o: srcs/%.cpp
 	@mkdir -p $(OBJ_DIR)
 	$(CXX) $(CFLAGS) -c -o $@ $<
 
-bot:
-	@clear
-	$(CXX) $(CFLAGS) -o bot srcs/Bot.cpp
-	@@valgrind --leak-check=full --show-leak-kinds=all --track-fds=yes ./bot localhost BAPASCII
+bonus: $(OBJ_BONUS)
+	$(CXX) $(CFLAGS) -o bot $^
+
+bot: bonus
+	@read -p "Do you want to launch valgrind with bot? [y/n] " valgrind;
+	@if [ "$valgrind" = "y" ]; then valgrind --leak-check=full --show-leak-kinds=all --track-fds=yes ./bot localhost BAPASCII; else ./bot localhost BAPASCII; fi
 
 hexchat:
 	@if ! flatpak list | grep -q io.github.Hexchat; then echo "Installing Hexchat..." && flatpak install flathub io.github.Hexchat -y ; else echo "Hexchat already installed"; fi
@@ -53,4 +56,4 @@ fclean: clean
 
 re: fclean all
 
-.PHONY: all clean fclean re bot valgrind run hexchat
+.PHONY: all clean fclean re bot valgrind run hexchat bonus
