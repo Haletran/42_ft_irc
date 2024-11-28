@@ -41,7 +41,7 @@ void Server::ClearClients(int fd)
 		if (_clients[i]->GetFd() == fd)
 		{
 			close(fd);
-			delete _clients[i]; // leaks if rejoin the channel after
+			delete _clients[i];
 			_clients.erase(_clients.begin() + i);
 			break;
 		}
@@ -279,7 +279,7 @@ void Server::printtabclient_fd(std::vector<Client> _clients)
 
 void Server::ReceiveNewData(int fd)
 {
-    char buffer[1024];
+    char buffer[20000]; // change to 10000 for bonus
     memset(buffer, 0, sizeof(buffer));
     int bytes_read = recv(fd, buffer, sizeof(buffer) - 1, 0);
 
@@ -371,6 +371,8 @@ void Server::LeaveChannel(const std::string &channel_name, Client *client)
 }
 
 Channel* Server::getChannelByName(const std::string &channel) {
+    if (channel.empty())
+        return NULL;
     std::map<Channel*, std::vector<Client*> >::iterator it;
     for (it = _channels.begin(); it != _channels.end(); ++it) {
         if (it->first->GetChannelName() == channel) {
@@ -427,6 +429,8 @@ Client *Server::get_ClientByNickname(std::string username)
 }
 
 Channel *Server::getCurrentChannel(Client *client){
+    if (!client)
+        return (NULL);
     for (std::map<Channel*, std::vector<Client*> >::iterator it = _channels.begin(); it != _channels.end(); ++it) {
         std::vector<Client*> clients = it->second;
         for (size_t i = 0; i < clients.size(); i++) {

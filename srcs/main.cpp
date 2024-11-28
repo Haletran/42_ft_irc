@@ -1,4 +1,5 @@
 #include "../includes/Global.hpp"
+#include <csignal>
 
 int main(int argc, char **argv)
 {
@@ -13,6 +14,7 @@ int main(int argc, char **argv)
 	{
 		signal(SIGINT, Server::SignalHandler);
 		signal(SIGQUIT, Server::SignalHandler);
+		signal(SIGPIPE, SIG_IGN);
 		server.ServerInit(atoi(argv[1]), argv[2]);
 	}
 	catch (const std::exception &e)

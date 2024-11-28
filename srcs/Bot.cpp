@@ -60,7 +60,7 @@ void Bot::login() {
     send_message("USER " + nickname + " 0 * :" + nickname);
     sleep(1);
     send_message("JOIN " + channel);
-    send_message("TOPIC " + channel + " :🎮 Welcome to the game Channel :) !");
+    send_message("TOPIC " + channel + " :🤖 Welcome to the Bot Channel :) !");
     std::cout << "\033[1;32m" << nickname << " is now online\033[0m" << std::endl;
 }
 
@@ -90,8 +90,7 @@ void Bot::renderVideo(std::string frames_directory) {
 
     send_message("PRIVMSG " + channel + " :ASCII animation starting in 3 seconds...");
     sleep(4);
-    if (frames_directory == "includes/BotUtils/bad-apple")
-        system("cvlc --play-and-exit includes/BotUtils/bad-apple/bad_apple.mp3 > /dev/null 2>&1 &");
+    system("cvlc --play-and-exit includes/BotUtils/bad-apple/bad_apple.mp3 > /dev/null 2>&1 &");
     if ((dir = opendir(frames_directory.c_str())) != NULL) {
         while ((ent = readdir(dir)) != NULL) {
             std::string file_name = ent->d_name;
@@ -105,7 +104,6 @@ void Bot::renderVideo(std::string frames_directory) {
         return;
     }
     std::sort(frames.begin(), frames.end());
-
 
     for (std::vector<std::string>::iterator it = frames.begin(); it != frames.end(); ++it) {
         std::ifstream file(it->c_str());
@@ -124,7 +122,7 @@ void Bot::renderVideo(std::string frames_directory) {
             }
         }
         file.close();
-        usleep(100000);
+        usleep(33333);
     }
     send_message("PRIVMSG " + channel + " :ASCII animation finished");
 }
@@ -145,7 +143,7 @@ void Bot::receive_messages() {
         else if (message.find("!ping") != std::string::npos)
             send_message("PRIVMSG " + channel + " :" + nickname +  " is alive and was created at " + time_created);
         else if (message.find("!bad-apple") != std::string::npos)
-            renderVideo("includes/BotUtils/bad-apple");
+            renderVideo("includes/BotUtils/bad-apple-30");
         else if (message.find("quoi") != std::string::npos)
         {
             switch(rand() % 2)

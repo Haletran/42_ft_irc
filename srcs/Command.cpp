@@ -9,31 +9,51 @@ void Server::JoinCommand(t_input *input)
 
 void Server::InviteCommand(t_input *input)
 {
-  Client *test = get_ClientByNickname(input->channel);
+  Client *client = get_ClientByNickname(input->channel);
   Channel *channel_instance = getCurrentChannel(input->client);
-  if (!test)
+  if (!client)
   {
-    test = get_ClientByNickname(trimNewline(input->parameters));
-    if (!test)
+    client = get_ClientByNickname(trimNewline(input->parameters));
+    if (!client)
     {
       input->client->SendMsg(INVITE_USER_ERROR);
       return;
     }
   }
-  if (channel_instance->isAlreadyConnected(test) == false)
+  if (channel_instance->isAlreadyConnected(client) == false)
   {
-    input->client->SendMsg(INVITE_SUCCESS_MSG);
-    test->SendMsg(INVITE_MSG_NEW);
-    if (channel_instance == NULL)
+    if (channel_instance->getInvite() == true)
     {
-      std::cerr << "Channel is NULL" << std::endl;
-      return;
+        if (channel_instance->IsOP(input->client))
+        {
+            input->client->SendMsg(INVITE_SUCCESS_MSG);
+            client->SendMsg(INVITE_MSG_NEW);
+            if (channel_instance == NULL)
+            {
+                std::cerr << "Channel is NULL" << std::endl;
+                return;
+            }
+            channel_instance->addInvited(client);
+        }
+        else
+        {
+            input->client->SendMsg(NOT_CHANNEL_OPERATOR_MSG);
+        }
     }
-    channel_instance->addInvited(test);
+    else if (channel_instance->getInvite() == false) {
+        input->client->SendMsg(INVITE_SUCCESS_MSG);
+        client->SendMsg(INVITE_MSG_NEW);
+        if (channel_instance == NULL)
+        {
+            std::cerr << "Channel is NULL" << std::endl;
+            return;
+        }
+        channel_instance->addInvited(client);
+    }
   }
   else
   {
-    std::string msg = "User " + test->GetNick() + " is already connected to the channel.\r\n";
+    std::string msg = "User " + client->GetNick() + " is already connected to the channel.\r\n";
     input->client->SendMsg(msg);
   }
 }

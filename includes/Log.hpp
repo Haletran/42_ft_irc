@@ -8,9 +8,9 @@
 #define EMPTY_TOPIC ":localhost 331 " + input->client->GetNick() + " " + input->channel + " :No topic is set\r\n"
 #define INVITE_MSG ":" + client->GetUsername() + " INVITE " + channel + " " + parameters
 #define INVITE_USER_ERROR ": 401 " + input->client->GetNick() + " " + input->channel + " :No such nick\n"
-#define INVITE_SUCCESS_MSG ":localhost 341 " + input->client->GetUsername() + " " + test->GetUsername() + " " + input->parameters + "\r\n"
+#define INVITE_SUCCESS_MSG ":localhost 341 " + input->client->GetUsername() + " " + client->GetUsername() + " " + input->parameters + "\r\n"
 #define INVITE_CONFIRM_MSG ": 341 " + input->client->GetUsername() + " " + input->test->GetUsername() + " #" + parameters + "\n"
-#define INVITE_MSG_NEW ":" + input->client->getNickname() + "!~" + input->client->GetUsername() + "@localhost INVITE " + test->getNickname() + " :" + input->parameters + "\r\n"
+#define INVITE_MSG_NEW ":" + input->client->getNickname() + "!~" + input->client->GetUsername() + "@localhost INVITE " + client->getNickname() + " :" + input->parameters + "\r\n"
 #define FORMATTED_MESSAGE ":" + sender->GetNick() + "!" + sender->GetUsername() + "@localhost PRIVMSG " + channel_name + " :" + message + "\r\n"
 #define CHANNEL_NOT_FOUND "403 " + client->GetNick() + " " + channel + " :No such channel\r\n"
 #define KICK_MSG ":" + client->GetNick() + " KICK " + channel + " " + nick + " :Kicked by " + client->GetNick() + "\r\n"
@@ -26,6 +26,7 @@
 #define NEW_CHANNEL_MSG ":localhost 353 " + client->getNickname() + " = " + channel->GetChannelName() + " :@" + client->getNickname() + "\r\n"
 #define LIST_USER ":localhost 353 " + client->getNickname() + " = " + _channel_name + " :" + array_op + " " + array_user + "\r\n"
 #define NOT_OP ":localhost 482 " + input->client->getNickname() + " " + getChannelByName(input->channel)->GetChannelName() + " :You're not a channel operator\r\n"
+#define NOT_CHANNEL_OPERATOR_MSG ":localhost 482 " + input->client->getNickname() + " " + channel_instance->GetChannelName() + " :You're not a channel operator\r\n"
 #define END_OF_NAMES_MSG ":localhost 366 " + client->getNickname() + " " + channel->GetChannelName() + " :End of /NAMES list.\r\n"
 #define PRIV_MSG ":" + client->GetNick() + "!~" + client->GetUsername() + "@localhost PRIVMSG " + nickname + " :" + msg_content + "\r\n"
 #define SEND_DEBUG "\033[32m>>\033[0m " << _fd << " " << trimNewline(msg)
