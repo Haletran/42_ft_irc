@@ -62,60 +62,30 @@ void Server::MsgCommand(t_input *input)
 void Server::TopicCommand(t_input *input)
 {
   if (input ->channel[0] != '#')
-  {
     return;
-  }
   Channel *chan = getChannelByName(input->channel);
-  if (chan->getTopicChange() == false && chan->IsOP(input->client))
+  print_t_input(input);
+  // topic without params to get the topic
+  if (input->parameters.empty())
   {
-    if (input->parameters.empty())
-    {
-      std::string currentTopic = getChannelByName(input->channel)->getTopic();
-      if (currentTopic.empty())
+      if (chan->getTopic().empty())
       {
-        input->client->SendMsg(EMPTY_TOPIC);
+          input->client->SendMsg(EMPTY_TOPIC);
+          return;
       }
-      else
-      {
-        input->client->SendMsg(TOPIC_ERROR);
-      }
-    }
-    else
-    {
-      getChannelByName(input->channel)->setTopic(input->parameters);
-      for (std::vector<Client *>::iterator it =
-               _channels[getChannelByName(input->channel)].begin();
-           it != _channels[getChannelByName(input->channel)].end(); ++it)
-        (*it)->SendMsg(SET_TOPIC);
-    }
+      input->client->SendMsg(TOPIC_MSG);
+      return ;
   }
-  else if (chan->getTopicChange() == true)
+  if (chan->getTopicChange() == true)
   {
-    if (input->parameters.empty())
-    {
-      std::string currentTopic = getChannelByName(input->channel)->getTopic();
-      if (currentTopic.empty())
+      if (!chan->IsOP(input->client))
       {
-        input->client->SendMsg(EMPTY_TOPIC);
+          
+            
+          
       }
-      else
-      {
-        input->client->SendMsg(TOPIC_ERROR);
-      }
-    }
-    else
-    {
-      getChannelByName(input->channel)->setTopic(input->parameters);
-      for (std::vector<Client *>::iterator it =
-               _channels[getChannelByName(input->channel)].begin();
-           it != _channels[getChannelByName(input->channel)].end(); ++it)
-        (*it)->SendMsg(SET_TOPIC);
-    }
   }
-  else
-  {
-    input->client->SendMsg(NOT_OP);
-  }
+
 }
 
 bool Server::ParsingMode(t_input *input, int & flag, Channel *channel)
@@ -293,6 +263,9 @@ void Server::ModeCommand(t_input *input)
 void Server::PartCommand(t_input *input)
 {
   Channel *channel = getChannelByName(input->channel);
+  if (!getCurrentChannel(input->client))
+    return;
+  input->client->SendMsg(PART_MSG);
   if (_channels[channel].size() == 1)
   {
     _channels.erase(channel);

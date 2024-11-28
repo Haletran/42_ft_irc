@@ -6,7 +6,6 @@
 #define CREATION_TIME ":localhost 329 " + client->getNickname() + " " + channel_name  + " " + getChannelByName(channel_name)->getTimeCreated() + "\r\n"
 #define SET_TOPIC ":" + input->client->GetNick() + "!" + input->client->GetUsername() + "@localhost TOPIC " + input->channel + " :" + input->parameters + "\r\n"
 #define EMPTY_TOPIC ":localhost 331 " + input->client->GetNick() + " " + input->channel + " :No topic is set\r\n"
-#define TOPIC_ERROR ":localhost 332 " + input->client->GetNick() + " " + input->channel + " :" + currentTopic + "\r\n"
 #define INVITE_MSG ":" + client->GetUsername() + " INVITE " + channel + " " + parameters
 #define INVITE_USER_ERROR ": 401 " + input->client->GetNick() + " " + input->channel + " :No such nick\n"
 #define INVITE_SUCCESS_MSG ":localhost 341 " + input->client->GetUsername() + " " + test->GetUsername() + " " + input->parameters + "\r\n"
@@ -39,7 +38,7 @@
 #define QUIT_MSG ":" + client->GetNick() + "!~" + client->GetUsername() + "@localhost QUIT :Client Quit\r\n"
 #define KEY_MODE_ERROR ":" + channel->GetChannelName() + " 696 " + input->client->GetNick() + " " + channel->GetChannelName() + " k * :You must specify a parameter for the key mode\r\n"
 #define NO_SUCH_NICK_CHANNEL ":localhost 401 " + input->client->GetNick() + " " + username + " :No such nick/channel\r\n"
-#define TOPIC_MSG ":localhost 332 " + client->GetNick() + " " + trimmed_channel_name + " :" + channel->getTopic() + "\n"
+#define TOPIC_MSG ":localhost 332 " + input->client->GetNick() + " " + input->channel + " :" + chan->getTopic() + "\r\n"
 #define OPERATOR_MODE_ERROR ":" + channel->GetChannelName() + " 696 " + input->client->GetNick() + " " + channel->GetChannelName() + " o * :You must specify a parameter for the operator mode\r\n"
 #define PART_MSG ":" + input->client->GetNick() + "!~" + input->client->GetUsername() + "@localhost PART " + input->channel + "\r\n"
 #define OPERATOR_ERROR "Impossible to add client to list of operators"

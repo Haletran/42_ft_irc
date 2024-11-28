@@ -23,7 +23,6 @@ bool Bot::send_message(const std::string& message) {
     std::string msg = message + "\r\n";
     if (!send(sockfd, msg.c_str(), msg.size(), 0))
         return (false);
-    usleep(200000);
     return (true);
 }
 
@@ -55,9 +54,11 @@ bool Bot::connect_to_server() {
 }
 
 void Bot::login() {
+    sleep(1);
     send_message("PASS " + password);
     send_message("NICK " + nickname);
     send_message("USER " + nickname + " 0 * :" + nickname);
+    sleep(1);
     send_message("JOIN " + channel);
     send_message("TOPIC " + channel + " :🎮 Welcome to the game Channel :) !");
     std::cout << "\033[1;32m" << nickname << " is now online\033[0m" << std::endl;

@@ -279,7 +279,7 @@ void Server::printtabclient_fd(std::vector<Client> _clients)
 
 void Server::ReceiveNewData(int fd)
 {
-    char buffer[7000];
+    char buffer[1024];
     memset(buffer, 0, sizeof(buffer));
     int bytes_read = recv(fd, buffer, sizeof(buffer) - 1, 0);
 
