@@ -42,3 +42,4 @@
 #define OPERATOR_MODE_ERROR ":" + channel->GetChannelName() + " 696 " + input->client->GetNick() + " " + channel->GetChannelName() + " o * :You must specify a parameter for the operator mode\r\n"
 #define PART_MSG ":" + input->client->GetNick() + "!~" + input->client->GetUsername() + "@localhost PART " + input->channel + "\r\n"
 #define OPERATOR_ERROR "Impossible to add client to list of operators"
+#define GET_TOPIC ":localhost 332 " + client->GetNick() + " " + trimmed_channel_name + " :" + channel->getTopic() + "\n"

@@ -339,7 +339,7 @@ void Server::SendInfos(const std::string &channel_name, Client *client)
     std::string trimmed_channel_name = trimNewline(channel_name);
     Channel* channel = getChannelByName(trimmed_channel_name);
     if (!channel->getTopic().empty() )
-        client->SendMsg(TOPIC_MSG);
+        client->SendMsg(GET_TOPIC);
     client->SendMsg(MODE_JOIN);
     client->SendMsg(FLAG_MSG);
     client->SendMsg(CREATION_TIME);

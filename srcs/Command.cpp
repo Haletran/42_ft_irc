@@ -76,16 +76,39 @@ void Server::TopicCommand(t_input *input)
       input->client->SendMsg(TOPIC_MSG);
       return ;
   }
+  // topic change if topic flag activated
   if (chan->getTopicChange() == true)
   {
       if (!chan->IsOP(input->client))
       {
-          
-            
-          
+          input->client->SendMsg(NOT_OP);
+          return;
       }
+      input->client->SendMsg(SET_TOPIC);
+      SendMessageToChannel(input->channel, input->client, SET_TOPIC);
+      for (std::vector<Client *>::iterator it = _channels[chan].begin();
+           it != _channels[chan].end(); ++it)
+      {
+        if ((*it) != input->client)
+          (*it)->SendMsg(SET_TOPIC);
+      }
+      chan->setTopic(input->parameters);
+      return;
   }
 
+  // topic change if topic flag desactived
+  if (chan->getTopicChange() == false)
+  {
+      input->client->SendMsg(SET_TOPIC);
+      for (std::vector<Client *>::iterator it = _channels[chan].begin();
+           it != _channels[chan].end(); ++it)
+      {
+        if ((*it) != input->client)
+          (*it)->SendMsg(SET_TOPIC);
+      }
+      chan->setTopic(input->parameters);
+      return ;
+  }
 }
 
 bool Server::ParsingMode(t_input *input, int & flag, Channel *channel)
