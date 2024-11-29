@@ -15,7 +15,11 @@ void Server::JoinCommand(t_input *input)
 
 void Server::InviteCommand(t_input *input)
 {
-    print_t_input(input);
+ // Command: INVITE
+ // Channel: bapasquiq
+ // Client : bapasquiasd
+ // Parameters: #asd
+ // Msg: INVITE bapasquiq #asd
   Client *client = get_ClientByNickname(input->channel);
   Channel *channel_instance = getCurrentChannel(input->client);
   if (!client)
@@ -347,7 +351,6 @@ void Server::JoinChannel(const std::string &channel_name, Client *client, std::s
   {
     if (channel->getInvite() == true && channel->IsInvited(client) == false)
     {
-      channel->IsInvited(client);
       client->SendMsg(INVITE_ONLY_ERROR);
       return;
     }

@@ -13,6 +13,7 @@
 - [x] : Parsing error in mode command
 - [x] : Invite not working properly
 - [ ] : Having problems with INVITE if multiple channel, works on first invite on the first channel but doesn't work on second channel (user is not invite : error)
+(input in struct not corresponding to the right stuff that's why)
 
 ## BOT animation
 
