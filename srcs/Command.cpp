@@ -2,9 +2,15 @@
 
 void Server::JoinCommand(t_input *input)
 {
-  if (input->channel[input->channel.length() - 1] == '\n')
-    input->channel = input->channel.substr(0, input->channel.length() - 1);
-  JoinChannel(input->channel, input->client, input->parameters);
+  std::vector<std::string> _channels_input;
+  std::stringstream ss(input->channel);
+  std::string channel;
+  while (std::getline(ss, channel, ','))
+  {
+    _channels_input.push_back(channel);
+  }
+  for (std::vector<std::string>::iterator it = _channels_input.begin(); it != _channels_input.end(); ++it)
+    JoinChannel(*it, input->client, input->parameters);
 }
 
 void Server::InviteCommand(t_input *input)
