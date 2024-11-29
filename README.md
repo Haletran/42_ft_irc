@@ -12,6 +12,7 @@
 - [x] : if user is in multiple channel then it remove only one channel instead of all the channel that the user is currently in (leaks currently)
 - [x] : Parsing error in mode command
 - [x] : Invite not working properly
+- [ ] : Having problems with INVITE if multiple channel, works on first invite on the first channel but doesn't work on second channel (user is not invite : error)
 
 ## BOT animation
 

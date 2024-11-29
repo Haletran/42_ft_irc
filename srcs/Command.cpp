@@ -15,6 +15,7 @@ void Server::JoinCommand(t_input *input)
 
 void Server::InviteCommand(t_input *input)
 {
+    print_t_input(input);
   Client *client = get_ClientByNickname(input->channel);
   Channel *channel_instance = getCurrentChannel(input->client);
   if (!client)
@@ -26,8 +27,6 @@ void Server::InviteCommand(t_input *input)
       return;
     }
   }
-  if (channel_instance->isAlreadyConnected(client) == false)
-  {
     if (channel_instance->getInvite() == true)
     {
         if (channel_instance->IsOP(input->client))
@@ -56,12 +55,11 @@ void Server::InviteCommand(t_input *input)
         }
         channel_instance->addInvited(client);
     }
-  }
-  else
-  {
-    std::string msg = "User " + client->GetNick() + " is already connected to the channel.\r\n";
-    input->client->SendMsg(msg);
-  }
+    else
+    {
+      std::string msg = "User " + client->GetNick() + " is already connected to the channel.\r\n";
+      input->client->SendMsg(msg);
+    }
 }
 
 void Server::KickCommand(t_input *input)
@@ -349,6 +347,7 @@ void Server::JoinChannel(const std::string &channel_name, Client *client, std::s
   {
     if (channel->getInvite() == true && channel->IsInvited(client) == false)
     {
+      channel->IsInvited(client);
       client->SendMsg(INVITE_ONLY_ERROR);
       return;
     }

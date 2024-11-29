@@ -122,7 +122,7 @@ void Bot::renderVideo(std::string frames_directory) {
             }
         }
         file.close();
-        usleep(33333);
+        usleep(100000);
     }
     send_message("PRIVMSG " + channel + " :ASCII animation finished");
 }
