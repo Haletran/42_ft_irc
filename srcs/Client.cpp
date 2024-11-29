@@ -10,7 +10,6 @@ Client::Client(Client const &src)
 {
 	*this = src;
 }
-
 int Client::GetFd()
 {
 	return _fd;

@@ -143,7 +143,7 @@ void Bot::receive_messages() {
         else if (message.find("!ping") != std::string::npos)
             send_message("PRIVMSG " + channel + " :" + nickname +  " is alive and was created at " + time_created);
         else if (message.find("!bad-apple") != std::string::npos)
-            renderVideo("includes/BotUtils/bad-apple-30");
+            renderVideo("includes/BotUtils/bad-apple");
         else if (message.find("quoi") != std::string::npos)
         {
             switch(rand() % 2)
