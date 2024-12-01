@@ -99,6 +99,11 @@ void Server::TopicCommand(t_input *input)
   if (input ->channel[0] != '#')
     return;
   Channel *chan = getChannelByName(input->channel);
+  if (!chan)
+  {
+	input->client->SendMsg("Channel does not exist.\r\n");
+	return;
+  }
   print_t_input(input);
   // topic without params to get the topic
   if (input->parameters.empty())
@@ -321,8 +326,13 @@ void Server::ModeCommand(t_input *input)
 void Server::PartCommand(t_input *input)
 {
   Channel *channel = getChannelByName(input->channel);
+  if (channel == NULL)
+  {
+	input->client->SendMsg("Channel does not exist.\r\n");
+	return;
+  }
   if (!getCurrentChannel(input->client))
-    return;
+  	return;
   input->client->SendMsg(PART_MSG);
   if (_channels[channel].size() == 1)
   {
