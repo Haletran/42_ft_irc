@@ -16,12 +16,19 @@ void Server::JoinCommand(t_input *input)
 void Server::InviteCommand(t_input *input)
 {
  // Command: INVITE
- // Channel: bapasquiq
- // Client : bapasquiasd
- // Parameters: #asd
+ // Channel: bapasquiq (client invited)
+ // Client : bapasquiasd (inviting client)
+ // Parameters: #asd (channel to invite to)
  // Msg: INVITE bapasquiq #asd
+  
   Client *client = get_ClientByNickname(input->channel);
-  Channel *channel_instance = getCurrentChannel(input->client);
+  std::string channel_name = trimNewline(input->parameters);
+  Channel *channel_instance = getChannelByName(channel_name);
+  if (!channel_instance)
+  {
+	input->client->SendMsg("Channel does not exist.\r\n");
+	return;
+  }
   if (!client)
   {
     client = get_ClientByNickname(trimNewline(input->parameters));
