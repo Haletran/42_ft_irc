@@ -20,7 +20,7 @@ void Server::InviteCommand(t_input *input)
  // Client : bapasquiasd (inviting client)
  // Parameters: #asd (channel to invite to)
  // Msg: INVITE bapasquiq #asd
-  
+
   Client *client = get_ClientByNickname(input->channel);
   std::string channel_name = trimNewline(input->parameters);
   Channel *channel_instance = getChannelByName(channel_name);
@@ -216,7 +216,7 @@ void Server::ModeCommand(t_input *input)
                 }
                 else
                 {
-                    channel->setPassword(input->parameters);
+                    channel->setPassword(trimNewline(input->parameters));
                     channel->setPasswordNeeded(true);
                     modeMsg = modeMsg + "+k " + input->parameters;
                 }
@@ -373,7 +373,7 @@ void Server::JoinChannel(const std::string &channel_name, Client *client, std::s
     }
     else if (channel->getPasswordNeeded() == true)
     {
-      if (parameters.compare(getChannelByName(channel_name)->getPassword()) != 0)
+      if (trimNewline(parameters).compare(getChannelByName(channel_name)->getPassword()) != 0)
       {
         client->SendMsg(BAD_KEY_ERROR);
         return;
