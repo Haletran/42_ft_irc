@@ -1,19 +1,6 @@
 # 42_FT_IRC
 
-## ERRORS
-
-- [x] : if user leaves the channel send a message to every user on the channel that he leaves
-- [x] : if the user have the same username then it think that both user has leave the channel
-- [x] : check if the BOT can make leaks
-- [x] : fix QUIT command
-- [x] : fix PART command
-- [x] : Parsing of channel name, username according to RFC
-- [x] : fix CTRL+D (not working on netcat)
-- [x] : if user is in multiple channel then it remove only one channel instead of all the channel that the user is currently in (leaks currently)
-- [x] : Parsing error in mode command
-- [x] : Invite not working properly
-- [ ] : Having problems with INVITE if multiple channel, works on first invite on the first channel but doesn't work on second channel (user is not invite : error)
-(input in struct not corresponding to the right stuff that's why)
+This project is about creating your own IRC server.
 
 ## BOT animation
 
