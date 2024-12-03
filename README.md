@@ -1,5 +1,7 @@
 # 42_FT_IRC
 
+=> Project made in collaboration with [@gnoumalin](https://github.com/gnoumalin)
+
 This project is about creating your own IRC server.
 
 ## BOT animation
