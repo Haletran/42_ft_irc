@@ -1,4 +1,5 @@
 #include "../includes/Global.hpp"
+#include <stdexcept>
 
 bool Server::_signal = false;
 
@@ -81,14 +82,20 @@ void Server::SerSocket()
 	if (_server_socket == -1)
 		throw std::runtime_error("Failed to create socket");
 	int opt = 1;
-	if (setsockopt(_server_socket, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt)) == -1)
+	if (setsockopt(_server_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) == -1)
 		throw std::runtime_error("Failed to set socket options");
 	if (fcntl(_server_socket, F_SETFL, O_NONBLOCK) == -1)
 		throw std::runtime_error("Failed to set non-blocking");
 	if (bind(_server_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)) == -1)
+	{
+		close(_server_socket);
 		throw std::runtime_error("Failed to bind socket");
+	}
 	if (listen(_server_socket, SOMAXCONN) == -1)
+	{
+		close(_server_socket);
 		throw std::runtime_error("Failed to listen for connections");
+	}
 	newpoll.fd = _server_socket;
 	newpoll.events = POLLIN;
 	newpoll.revents = 0;

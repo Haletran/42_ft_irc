@@ -15,12 +15,6 @@ void Server::JoinCommand(t_input *input)
 
 void Server::InviteCommand(t_input *input)
 {
- // Command: INVITE
- // Channel: bapasquiq (client invited)
- // Client : bapasquiasd (inviting client)
- // Parameters: #asd (channel to invite to)
- // Msg: INVITE bapasquiq #asd
-
   Client *client = get_ClientByNickname(input->channel);
   std::string channel_name = trimNewline(input->parameters);
   Channel *channel_instance = getChannelByName(channel_name);
@@ -249,7 +243,7 @@ void Server::ModeCommand(t_input *input)
                 }
                 else
                 {
-                    std::string username = input->parameters;
+                    std::string username = trimNewline(input->parameters);
                     Client* target = get_ClientByNickname(username);
                     if (!target)
                     {
@@ -280,7 +274,7 @@ void Server::ModeCommand(t_input *input)
                     input->client->SendMsg(NOT_ENOUGH_PARAMETERS_MSG);
                     return;
                 }
-                if (input->parameters == channel->getPassword())
+                if (trimNewline(input->parameters) == channel->getPassword())
                 {
                     channel->setPasswordNeeded(false);
                     modeMsg = modeMsg + "-k";
@@ -303,7 +297,7 @@ void Server::ModeCommand(t_input *input)
                 }
                 else
                 {
-                    std::string username = input->parameters;
+                    std::string username = trimNewline(input->parameters);
                     Client* target = get_ClientByNickname(username);
                     if (!target)
                     {
