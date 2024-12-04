@@ -175,8 +175,6 @@ void Server::AuthenticateClient(int fd, std::string buffer)
 			{
 				std::string msg = "Authentication failed\n";
 				send(fd, msg.c_str(), msg.length(), 0);
-				ClearClients(fd);
-				close(fd);
 			}
 		}
 		if (line.find("NICK ") == 0)
@@ -306,6 +304,10 @@ void Server::ReceiveNewData(int fd)
                 ProcedeMessage(stored_buffer, client);
             client->SetBuffer("");
         }
+        std::cout << "Client disconnected on fd: " << fd << std::endl;
+        SendQuittingMessage(client);
+        ClearClients(fd);
+        //close(fd);
         return;
     }
 
