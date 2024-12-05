@@ -13,6 +13,7 @@ class Server
 		std::vector<Client*> _clients;
 		std::vector<struct pollfd> _pollfds;
 		std::map<Channel*, std::vector<Client*> > _channels;
+		std::map<std::string, void (Server::*)(t_input*)> _commands;
 	public :
 	   Server();
 	   ~Server();
@@ -55,7 +56,6 @@ class Server
 
 		// UTILS
 	   void CloseFds();
-	   int GetCommand(std::string command);
 	   std::vector<Client*> GetClientsFromChannel(const std::string &channel);
 	   Client *get_ClientByUsername(std::string username);
 	   Channel *getCurrentChannel(Client *client);
@@ -73,4 +73,6 @@ class Server
 	   void TopicCommand(t_input *input);
 	   void ModeCommand(t_input *input);
 	   void PartCommand(t_input *input);
+	   void WhoCommand(t_input *input);
+	    void QuitCommand(t_input *input);
 };

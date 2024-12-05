@@ -472,3 +472,14 @@ void Server::KickFromChannel(const std::string &channel,
   }
   client->SendMsg(USER_NOT_ON_CHANNEL);
 }
+
+void Server::WhoCommand(t_input *input)
+{
+    SendInfos(input->channel, input->client);
+}
+
+void Server::QuitCommand(t_input *input)
+{
+  SendQuittingMessage(input->client);
+  ClearClients(input->client->GetFd());
+}

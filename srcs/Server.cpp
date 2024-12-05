@@ -5,6 +5,15 @@ bool Server::_signal = false;
 
 Server::Server()
 {
+    _commands["JOIN"] = &Server::JoinCommand;
+    _commands["INVITE"] = &Server::InviteCommand;
+    _commands["KICK"] = &Server::KickCommand;
+    _commands["PRIVMSG"] = &Server::MsgCommand;
+    _commands["TOPIC"] = &Server::TopicCommand;
+    _commands["MODE"] = &Server::ModeCommand;
+    _commands["PART"] = &Server::PartCommand;
+    _commands["QUIT"] = &Server::QuitCommand;
+    _commands["WHO"] = &Server::WhoCommand;
 	_server_socket = -1;
 }
 
@@ -284,7 +293,7 @@ void Server::printtabclient_fd(std::vector<Client> _clients)
 
 void Server::ReceiveNewData(int fd)
 {
-    char buffer[20000]; // change to 10000 for bonus
+    char buffer[2048]; // change to 10000 for bonus
     memset(buffer, 0, sizeof(buffer));
     int bytes_read = recv(fd, buffer, sizeof(buffer) - 1, 0);
 

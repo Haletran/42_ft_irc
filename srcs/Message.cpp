@@ -10,63 +10,20 @@ void Server::ProcedeCommand(const std::string &msg, Client *client)
   }
   std::cerr << RECEIVE_DEBUG << std::endl;
   struct s_input *input = new struct s_input;
-  input->command = command;
-  input->channel = channel;
-  input->parameters = parameters;
-  input->msg = msg;
+  input->command = trimNewline(command);
+  input->channel = trimNewline(channel);
+  input->parameters = trimNewline(parameters);
+  input->msg = trimNewline(msg);
   input->client = client;
   executeCommand(input);
 }
 
 void Server::executeCommand(t_input *input)
 {
-  switch (GetCommand(input->command))
-  {
-  case 0: // JOIN
-    JoinCommand(input);
-    break;
-  case 1: // INVITE
-  {
-    InviteCommand(input);
-    break;
-  }
-  case 2: // KICK
-    KickCommand(input);
-    break;
-  case 3: // PRIVMSG
-  {
-    MsgCommand(input);
-    break;
-  }
-  case 4: // TOPIC
-  {
-    TopicCommand(input);
-    break;
-  }
-  case 5: // MODE
-  {
-    ModeCommand(input);
-    break;
-  }
-  case 6: // PART
-  {
-    PartCommand(input);
-    break;
-  }
-  case 7:
-  {
-    SendInfos(input->channel, input->client);
-    break;
-  }
-  case 8: // QUIT
-  {
-    SendQuittingMessage(input->client);
-    ClearClients(input->client->GetFd());
-    break;
-  }
-  default:
-    std::cerr << "Invalid command" << std::endl;
-    break;
+  if (_commands.find(input->command) != _commands.end()) {
+      (this->*(_commands[input->command]))(input);
+  } else {
+        std::cerr << "Command not found: " << input->command << std::endl;
   }
   delete input;
 }
@@ -114,27 +71,4 @@ void Server::SendMessageToSomeone(Client *client, std::string msg_content, std::
     }
   }
   client->SendMsg("User " + nickname + " not found.\r\n");
-}
-
-int Server::GetCommand(std::string command)
-{
-  if (command == "JOIN")
-    return (0);
-  if (command == "INVITE")
-    return (1);
-  if (command == "KICK")
-    return (2);
-  if (command == "PRIVMSG")
-    return (3);
-  if (command == "TOPIC")
-    return (4);
-  if (command == "MODE")
-    return (5);
-  if (command == "PART")
-    return (6);
-  if (command == "WHO")
-    return (7);
-  if (command == "QUIT")
-    return (8);
-  return (-1);
 }
