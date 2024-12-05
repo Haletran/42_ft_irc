@@ -7,6 +7,7 @@ class Server
 {
 	protected :
 		int _port;
+		int _steps;
 		std::string _pwd;
 		int _server_socket;
 		static bool _signal;
