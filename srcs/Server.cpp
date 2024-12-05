@@ -14,6 +14,11 @@ Server::Server()
     _commands["PART"] = &Server::PartCommand;
     _commands["QUIT"] = &Server::QuitCommand;
     _commands["WHO"] = &Server::WhoCommand;
+    _modeOptions["o"] = &Server::OpMode;
+    _modeOptions["t"] = &Server::TopicMode;
+    _modeOptions["i"] = &Server::InviteOnlyMode;
+    _modeOptions["k"] = &Server::KeyMode;
+    _modeOptions["l"] = &Server::LimitMode;
 	_server_socket = -1;
 }
 

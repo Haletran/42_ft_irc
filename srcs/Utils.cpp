@@ -73,9 +73,9 @@ bool check_invalid_chars(const std::string &str)
     if (str.empty())
         return false;
     char first_char = str[0];
-    if (first_char == '$' || first_char == ':' || 
-        first_char == '#' || first_char == '&' || 
-        first_char == '+' || first_char == '!') 
+    if (first_char == '$' || first_char == ':' ||
+        first_char == '#' || first_char == '&' ||
+        first_char == '+' || first_char == '!')
         {
         return false;
     }
@@ -101,4 +101,5 @@ void print_t_input(t_input *input)
   std::cerr << "Client : " << input->client->getNickname() << std::endl;
   std::cerr << "Parameters: " << input->parameters << std::endl;
   std::cerr << "Msg: " << input->msg << std::endl;
+  std::cerr << "Prefix: " << input->prefix << std::endl;
 }

@@ -14,6 +14,7 @@ class Server
 		std::vector<struct pollfd> _pollfds;
 		std::map<Channel*, std::vector<Client*> > _channels;
 		std::map<std::string, void (Server::*)(t_input*)> _commands;
+		std::map<std::string, std::string(Server::*)(t_input*, std::string, Channel *channel)> _modeOptions;
 	public :
 	   Server();
 	   ~Server();
@@ -52,7 +53,7 @@ class Server
 	   static void SignalHandler(int signum);
 	   std::string GetPwd();
 	   void SetPwd(std::string pwd);
-	   bool ParsingMode(t_input *input, int & flag, Channel *channel);
+	   bool ParsingMode(t_input *input, Channel *channel);
 
 		// UTILS
 	   void CloseFds();
@@ -74,5 +75,13 @@ class Server
 	   void ModeCommand(t_input *input);
 	   void PartCommand(t_input *input);
 	   void WhoCommand(t_input *input);
-	    void QuitCommand(t_input *input);
+	   void QuitCommand(t_input *input);
+
+
+		// MODE
+	   std::string OpMode(t_input *input, std::string params, Channel *channel);
+	   std::string InviteOnlyMode(t_input *input, std::string params, Channel *channel);
+	   std::string TopicMode(t_input *input, std::string params, Channel *channel);
+	   std::string KeyMode(t_input *input, std::string params, Channel *channel);
+	   std::string LimitMode(t_input *input, std::string params, Channel *channel);
 };

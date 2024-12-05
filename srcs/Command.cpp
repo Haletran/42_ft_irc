@@ -145,10 +145,15 @@ void Server::TopicCommand(t_input *input)
   }
 }
 
-bool Server::ParsingMode(t_input *input, int & flag, Channel *channel)
+bool Server::ParsingMode(t_input *input, Channel *channel)
 {
     std::string mode_array = "itklo";
 
+    if (input->prefix[0] != '+' || input->prefix[0] != '-')
+    {
+        input->client->SendMsg("Invalid mode prefix.\r\n");
+        return false;
+    }
     if (input->parameters.empty())
         return false;
     if (!channel)
@@ -158,162 +163,60 @@ bool Server::ParsingMode(t_input *input, int & flag, Channel *channel)
         input->client->SendMsg(NOT_OP);
         return false;
     }
-    std::string flag_str = trimNewline(input->parameters.substr(0, 3));
-    std::string params_str = trimNewline(input->parameters.substr(2));
-    flag_str.erase(flag_str.find_last_not_of(" \n\r\t") + 1);
-    flag_str.erase(0, flag_str.find_first_not_of(" \n\r\t"));
-    params_str.erase(params_str.find_last_not_of(" \n\r\t") + 1);
-    params_str.erase(0, params_str.find_first_not_of(" \n\r\t"));
+    std::string mode;
+    std::string params;
+    std::string test;
+    std::stringstream ss(input->parameters);
+    std::getline(ss, mode, ' ');
+    std::getline(ss, params);
+    input->parameters = params;
+    test = mode;
 
-    if (flag_str.size() != 2)
-        return false;
-    for (int i = 0; i < static_cast<int>(mode_array.length()); ++i)
-    {
-        if (mode_array[i] == flag_str[1])
-        {
-            flag = i;
-            break;
+    std::stringstream paramStream(input->parameters);
+    std::string arg;
+    int i = 0;
+    while (i < static_cast<int>(test.size())) {
+        if (mode_array.find(test[i]) != std::string::npos) {
+            if (test[i] == 'i' || test[i] == 't' || test[i] == 'k' || test[i] == 'l' || test[i] == 'o') {
+                if (test[i] == 'i' || test[i] == 't') {
+                    input->modes[std::string(1, test[i])] = "";
+                } else {
+                    if (!(paramStream >> arg)) {
+                        input->client->SendMsg("Not enough parameters for mode change.\r\n");
+                    }
+                    else
+                        input->modes[std::string(1, test[i])] = arg;
+                }
+            }
         }
+        ++i;
     }
-    if (flag == -1)
-        return false;
-    input->parameters = params_str;
-    input->msg = flag_str;
     return true;
 }
 
-
 void Server::ModeCommand(t_input *input)
 {
-    int flag = -1;
     Channel* channel = getChannelByName(input->channel);
-    if (ParsingMode(input, flag, channel) == false)
-        return ;
-    std::string modeMsg = MODE_MSG_NEW;
-    if (input->msg[0] == '+')
-    {
-        switch (flag)
-        {
-            case 0: // +i
-                channel->setInviteOnly(true);
-                modeMsg = modeMsg + "+i";
-                break;
-            case 1: // +t
-                channel->setTopicChange(false);
-                modeMsg = modeMsg + "+t";
-                break;
-            case 2: // +k
-                if (input->parameters.length() <= 0)
-                {
-                    input->client->SendMsg(KEY_MODE_ERROR);
-                    return;
-                }
-                else
-                {
-                    channel->setPassword(trimNewline(input->parameters));
-                    channel->setPasswordNeeded(true);
-                    modeMsg = modeMsg + "+k " + input->parameters;
-                }
-                break;
-            case 3: // +l
-                if (input->parameters.length() <= 0)
-                {
-                    input->client->SendMsg(LIMIT_MODE_ERROR);
-                    return;
-                }
-                else
-                {
-                    std::stringstream ss;
-                    int limit = atoi(input->parameters.c_str());
-                    if (limit <= 0)
-                    {
-                        input->client->SendMsg(INVALID_LIMIT_VALUE_MSG);
-                        return;
-                    }
-                    channel->setUserLimit(limit);
-                    ss << limit;
-                    modeMsg = modeMsg + "+l " + ss.str();
-                }
-                break;
-            case 4: // +o
-                if (input->parameters.length() <= 0)
-                {
-                    input->client->SendMsg(OPERATOR_MODE_ERROR);
-                    return;
-                }
-                else
-                {
-                    std::string username = trimNewline(input->parameters);
-                    Client* target = get_ClientByNickname(username);
-                    if (!target)
-                    {
-                        input->client->SendMsg(NO_SUCH_NICK_CHANNEL);
-                        return;
-                    }
-                    channel->addOperators(target);
-                    modeMsg = modeMsg + "+o " + username;
-                }
-                break;
-        }
+    input->prefix = (input->parameters[0] == '+') ? '+' : '-';
+    input->parameters.erase(0, 1);
+    if (ParsingMode(input, channel) == false)
+        return;
+
+    for (std::map<std::string, std::string>::iterator it = input->modes.begin(); it != input->modes.end(); ++it) {
+        std::cout << "Mode: " << it->first << " Parameter: " << it->second << std::endl;
     }
-    else if (input->msg[0] == '-')
-    {
-        switch (flag)
-        {
-            case 0:
-                channel->setInviteOnly(false);
-                modeMsg = modeMsg + "-i";
-                break;
-            case 1:
-                channel->setTopicChange(true);
-                modeMsg = modeMsg + "-t";
-                break;
-            case 2:
-                if (input->parameters.length() <= 0)
+
+    for (std::map<std::string, std::string>::iterator it = input->modes.begin(); it != input->modes.end(); ++it) {
+        if (_modeOptions.find(it->first) != _modeOptions.end()) {
+            std::string modeMsg = (this->*(_modeOptions[it->first]))(input, it->second, channel);
+            if (!modeMsg.empty())
+            {
+                for (std::vector<Client *>::iterator it = _channels[channel].begin(); it != _channels[channel].end(); ++it)
                 {
-                    input->client->SendMsg(NOT_ENOUGH_PARAMETERS_MSG);
-                    return;
+                    (*it)->SendMsg(modeMsg + "\r\n");
                 }
-                if (trimNewline(input->parameters) == channel->getPassword())
-                {
-                    channel->setPasswordNeeded(false);
-                    modeMsg = modeMsg + "-k";
-                }
-                else
-                {
-                    input->client->SendMsg(INVALID_PASSWORD_MSG);
-                    return;
-                }
-                break;
-            case 3:
-                channel->setUserLimit(std::numeric_limits<int>::max());
-                modeMsg = modeMsg + "-l";
-                break;
-            case 4:
-                if (input->parameters.length() <= 0)
-                {
-                    input->client->SendMsg(NOT_ENOUGH_PARAMETERS_FOR_O_MSG);
-                    return;
-                }
-                else
-                {
-                    std::string username = trimNewline(input->parameters);
-                    Client* target = get_ClientByNickname(username);
-                    if (!target)
-                    {
-                        input->client->SendMsg(NO_SUCH_NICK_CHANNEL);
-                        return;
-                    }
-                    channel->removeOperator(target);
-                    modeMsg = modeMsg + "-o " + username;
-                }
-                break;
+            }
         }
-    }
-    std::vector<Client*>::iterator it;
-    for (it = _channels[channel].begin(); it != _channels[channel].end(); ++it)
-    {
-        (*it)->SendMsg(modeMsg + "\r\n");
     }
 }
 
@@ -365,7 +268,7 @@ void Server::JoinChannel(const std::string &channel_name, Client *client, std::s
       client->SendMsg(INVITE_ONLY_ERROR);
       return;
     }
-    else if (channel->getPasswordNeeded() == true)
+    if (channel->getPasswordNeeded() == true)
     {
       if (trimNewline(parameters).compare(getChannelByName(channel_name)->getPassword()) != 0)
       {
@@ -373,12 +276,12 @@ void Server::JoinChannel(const std::string &channel_name, Client *client, std::s
         return;
       }
     }
-    else if (channel->getNbUser() + 1 >= channel->getlimit())
+    if (channel->getNbUser() + 1 >= channel->getlimit())
     {
       client->SendMsg(CHANNEL_FULL_ERROR);
       return;
     }
-    else if (channel->isAlreadyConnected(client))
+    if (channel->isAlreadyConnected(client))
     {
       client->SendMsg(ALREADY_IN_CHANNEL_ERROR);
       return;

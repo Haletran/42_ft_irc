@@ -8,6 +8,7 @@ SRCS = srcs/main.cpp \
 	srcs/Message.cpp \
 	srcs/Channel.cpp \
 	srcs/Utils.cpp \
+	srcs/Mode.cpp \
 	srcs/Command.cpp \
 
 OBJ_DIR = obj
