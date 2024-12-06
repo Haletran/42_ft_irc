@@ -94,6 +94,15 @@ bool check_invalid_chars(const std::string &str)
     return true;
 }
 
+bool checkIfValidMode(char c)
+{
+    std::string modes = "itlko";
+    if (modes.find(c) != std::string::npos)
+        return true;
+    return false;
+}
+
+
 void print_t_input(t_input *input)
 {
   std::cerr << "Command: " << input->command << std::endl;

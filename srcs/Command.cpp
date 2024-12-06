@@ -149,11 +149,6 @@ bool Server::ParsingMode(t_input *input, Channel *channel)
 {
     std::string mode_array = "itklo";
 
-    if (input->prefix[0] != '+' || input->prefix[0] != '-')
-    {
-        input->client->SendMsg("Invalid mode prefix.\r\n");
-        return false;
-    }
     if (input->parameters.empty())
         return false;
     if (!channel)
@@ -197,8 +192,19 @@ bool Server::ParsingMode(t_input *input, Channel *channel)
 void Server::ModeCommand(t_input *input)
 {
     Channel* channel = getChannelByName(input->channel);
+    if (input->parameters[0] != '+' && input->parameters[0] != '-')
+    {
+        if (checkIfValidMode(input->parameters[0]) == true)
+            input->parameters = "+" + input->parameters;
+        else
+        {
+            input->client->SendMsg("Invalid mode prefix.\r\n");
+            return;
+        }
+    }
     input->prefix = (input->parameters[0] == '+') ? '+' : '-';
     input->parameters.erase(0, 1);
+    print_t_input(input);
     if (ParsingMode(input, channel) == false)
         return;
 

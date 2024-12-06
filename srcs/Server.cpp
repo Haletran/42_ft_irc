@@ -260,12 +260,12 @@ void Server::AuthenticateClient(int fd, std::string buffer)
                 send(fd, msg.c_str(), msg.length(), 0);
 			}
 		}
-	}
-	if (_steps >= 3)
-	{
-	   std::string msg = ":localhost 001 :Welcome to our IRC server\r\n";
-	   send(fd, msg.c_str(), msg.length(), 0);
-	   _steps = 0;
+		if (_steps >= 3)
+		{
+		   std::string msg = ":localhost 001 " + getClientByFd(fd)->GetNick() + " :Welcome to the IRC server\r\n";
+		   send(fd, msg.c_str(), msg.length(), 0);
+		   _steps = 0;
+		}
 	}
 }
 
