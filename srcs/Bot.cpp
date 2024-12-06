@@ -1,12 +1,12 @@
 #include "../includes/Global.hpp"
 
-Bot::Bot(const std::string& ip, const std::string& name) {
+Bot::Bot(const std::string& ip, const std::string& port, const std::string& name) {
     this->sockfd = -1;
     this->server_ip = ip;
-    this->port = 6697;
-    this->nickname = name;
+    this->port = atoi(port.c_str());
+    this->nickname = "BAPASCII";
     this->channel = "#bot";
-    this->password = "mdp";
+    this->password = name;
     this->isStarted = false;
     std::stringstream ss;
     std::time_t current_time = std::time(0);
@@ -189,14 +189,17 @@ void Bot::SignalHandler(int signal) {
 
 
 int main(int argc, char **argv) {
-    if (argc != 3) {
-        std::cerr << "Usage: " << argv[0] << " <server_ip> <name>" << std::endl;
+    if (argc != 4) {
+        std::cerr << "Usage: " << argv[0] << " <server_ip> <port> <password>" << std::endl;
         return 1;
     }
     srand(time(0));
-    std::string nickname = argv[2];
+    std::string password = argv[3];
+    std::string port = argv[2];
     std::string ip = argv[1];
-    Bot client(ip, nickname);
+
+    std::cout << "Password: " << password << ", Port: " << port << ", IP: " << ip << std::endl;
+    Bot client(ip, port, password);
     try {
         signal(SIGPIPE, SIG_IGN);
         signal(SIGINT, client.SignalHandler);

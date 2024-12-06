@@ -31,7 +31,7 @@ bonus: $(OBJ_BONUS)
 
 bot: bonus
 	@read -p "Do you want to launch valgrind with bot? [y/n] " valgrind;
-	@if [ "$valgrind" = "y" ]; then valgrind --leak-check=full --show-leak-kinds=all --track-fds=yes ./bot localhost BAPASCII; else ./bot localhost BAPASCII; fi
+	@if [ "$valgrind" = "y" ]; then valgrind --leak-check=full --show-leak-kinds=all --track-fds=yes ./bot localhost 6697 mdp; else ./bot localhost 6697 mdp; fi
 
 hexchat:
 	@if ! flatpak list | grep -q io.github.Hexchat; then echo "Installing Hexchat..." && flatpak install flathub io.github.Hexchat -y ; else echo "Hexchat already installed"; fi

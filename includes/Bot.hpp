@@ -14,7 +14,7 @@ class Bot {
         bool isStarted;
         std::string time_created;
     public:
-        Bot(const std::string& ip, const std::string& name);
+        Bot(const std::string& ip, const std::string& port, const std::string& name);
         ~Bot();
         bool connect_to_server();
         void login();
