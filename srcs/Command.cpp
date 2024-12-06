@@ -176,7 +176,7 @@ bool Server::ParsingMode(t_input *input, Channel *channel)
                 if (test[i] == 'i' || test[i] == 't') {
                     input->modes[std::string(1, test[i])] = "";
                 } else {
-                    if (!(paramStream >> arg)) {
+                    if (!(paramStream >> arg) && (input->prefix[0] != '-' && test[i] == 'l')) {
                         input->client->SendMsg("Not enough parameters for mode change.\r\n");
                     }
                     else
@@ -192,6 +192,8 @@ bool Server::ParsingMode(t_input *input, Channel *channel)
 void Server::ModeCommand(t_input *input)
 {
     Channel* channel = getChannelByName(input->channel);
+    if (input->parameters.empty())
+        return;
     if (input->parameters[0] != '+' && input->parameters[0] != '-')
     {
         if (checkIfValidMode(input->parameters[0]) == true)
@@ -204,13 +206,12 @@ void Server::ModeCommand(t_input *input)
     }
     input->prefix = (input->parameters[0] == '+') ? '+' : '-';
     input->parameters.erase(0, 1);
-    print_t_input(input);
     if (ParsingMode(input, channel) == false)
         return;
 
-    for (std::map<std::string, std::string>::iterator it = input->modes.begin(); it != input->modes.end(); ++it) {
-        std::cout << "Mode: " << it->first << " Parameter: " << it->second << std::endl;
-    }
+    // for (std::map<std::string, std::string>::iterator it = input->modes.begin(); it != input->modes.end(); ++it) {
+    //     std::cout << "Mode: " << it->first << " Parameter: " << it->second << std::endl;
+    // }
 
     for (std::map<std::string, std::string>::iterator it = input->modes.begin(); it != input->modes.end(); ++it) {
         if (_modeOptions.find(it->first) != _modeOptions.end()) {
@@ -224,7 +225,10 @@ void Server::ModeCommand(t_input *input)
             }
         }
     }
+    input->modes.clear();
 }
+
+
 
 void Server::PartCommand(t_input *input)
 {

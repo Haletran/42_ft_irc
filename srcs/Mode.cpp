@@ -123,7 +123,6 @@ std::string Server::LimitMode(t_input *input, std::string params, Channel *chann
             input->client->SendMsg(INVALID_LIMIT_VALUE_MSG);
             return "";
         }
-        std::cerr << "Limit: " << limit << std::endl;
         channel->setUserLimit(limit);
         ss << limit;
         modeMsg = modeMsg + "+l " + ss.str();
