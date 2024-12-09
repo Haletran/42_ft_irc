@@ -176,7 +176,9 @@ void Bot::receive_messages() {
 
 void Bot::disconnect() {
     if (sockfd != -1) {
-        send_message("PART " + channel + " :Leaving");
+        //":" + client->GetNick() + "!~" + client->GetUsername() + "@localhost QUIT :Client Quit\r\n"
+        //send_message("PART " + channel + " :Leaving");
+        send_message("QUIT :Leaving");
         close(sockfd);
         sockfd = -1;
     }
