@@ -1,4 +1,4 @@
-#include "../includes/Global.hpp"
+#include "Global.hpp"
 
 void Server::JoinCommand(t_input *input)
 {

@@ -1,4 +1,4 @@
-#include "../includes/Global.hpp"
+#include "Global.hpp"
 
 bool Server::_signal = false;
 

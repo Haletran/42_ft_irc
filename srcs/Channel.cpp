@@ -1,4 +1,4 @@
-#include "../includes/Global.hpp"
+#include "Global.hpp"
 
 Channel::Channel() : _channel_name("#general"), _topic(""), _invite_only(false), _password(NULL), _user_limit(std::numeric_limits<int>::max())
 {

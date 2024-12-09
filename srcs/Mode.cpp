@@ -1,4 +1,4 @@
-#include "../includes/Global.hpp"
+#include "Global.hpp"
 
 std::string Server::OpMode(t_input *input, std::string params, Channel *channel)
 {

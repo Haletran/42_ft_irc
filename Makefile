@@ -1,6 +1,6 @@
 CXX = c++
 
-CFLAGS = -Wall -Wextra -Werror -g -std=c++98
+CFLAGS = -Wall -Wextra -Werror -g -std=c++98 -I includes
 
 SRCS = srcs/main.cpp \
 	srcs/Server.cpp \

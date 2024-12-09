@@ -1,4 +1,4 @@
-#include "../includes/Global.hpp"
+#include "Global.hpp"
 
 void Server::ProcedeCommand(const std::string &msg, Client *client)
 {

@@ -1,4 +1,4 @@
-#include "../includes/Global.hpp"
+#include "Global.hpp"
 
 Bot::Bot(const std::string& ip, const std::string& port, const std::string& name) {
     this->sockfd = -1;

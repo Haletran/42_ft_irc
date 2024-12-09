@@ -1,5 +1,4 @@
-#include "../includes/Global.hpp"
-#include <csignal>
+#include "Global.hpp"
 
 int main(int argc, char **argv)
 {
