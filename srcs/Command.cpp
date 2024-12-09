@@ -209,10 +209,6 @@ void Server::ModeCommand(t_input *input)
     if (ParsingMode(input, channel) == false)
         return;
 
-    // for (std::map<std::string, std::string>::iterator it = input->modes.begin(); it != input->modes.end(); ++it) {
-    //     std::cout << "Mode: " << it->first << " Parameter: " << it->second << std::endl;
-    // }
-
     for (std::map<std::string, std::string>::iterator it = input->modes.begin(); it != input->modes.end(); ++it) {
         if (_modeOptions.find(it->first) != _modeOptions.end()) {
             std::string modeMsg = (this->*(_modeOptions[it->first]))(input, it->second, channel);
@@ -227,8 +223,6 @@ void Server::ModeCommand(t_input *input)
     }
     input->modes.clear();
 }
-
-
 
 void Server::PartCommand(t_input *input)
 {
@@ -269,7 +263,7 @@ void Server::JoinChannel(const std::string &channel_name, Client *client, std::s
     std::cerr << "Client is not fully authenticated: " << client->GetFd() << std::endl;
     return;
   }
-  std::string trimmed_channel_name = trimNewline(channel_name);
+  std::string trimmed_channel_name = channel_name;
   Channel *channel = getChannelByName(trimmed_channel_name);
   if (channel != NULL)
   {

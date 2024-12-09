@@ -191,12 +191,13 @@ void Server::AuthenticateClient(int fd, std::string buffer)
 				std::string msg = "Authenticated\n";
 				send(fd, msg.c_str(), msg.length(), 0);
 				std::cout << "[Client FD: " << fd << "] : Authentication successful" << std::endl;
-				_steps += 1;
 			}
 			else
 			{
 				std::string msg = "Authentication failed\n";
 				send(fd, msg.c_str(), msg.length(), 0);
+				ClearClients(fd);
+				close(fd);
 			}
 		}
 		if (line.find("NICK ") == 0)
@@ -211,7 +212,8 @@ void Server::AuthenticateClient(int fd, std::string buffer)
 			else if (check_invalid_chars(nick))
 			{
 				client->SetNick(nick);
-				_steps += 1;
+				std::string msg = ":localhost 001 " + nick + " :Welcome to the IRC server\r\n";
+				send(fd, msg.c_str(), msg.length(), 0);
 			}
 			else
 			{
@@ -235,7 +237,6 @@ void Server::AuthenticateClient(int fd, std::string buffer)
 				else if (get_ClientByUsername(username) == NULL)
 				{
 					client->SetUsername(username);
-					_steps += 1;
 				}
                 else
 				{
@@ -250,7 +251,6 @@ void Server::AuthenticateClient(int fd, std::string buffer)
                         {
                             client->SetUsername(user_copy);
                             username = user_copy;
-                            _steps += 1;
                             break;
                         }
                         i++;
@@ -260,16 +260,8 @@ void Server::AuthenticateClient(int fd, std::string buffer)
                 send(fd, msg.c_str(), msg.length(), 0);
 			}
 		}
-		// if (_steps >= 3)
-		// {
-		//    std::string msg = ":localhost 001 " + getClientByFd(fd)->GetNick() + " :Welcome to the IRC server\r\n";
-		//    send(fd, msg.c_str(), msg.length(), 0);
-		//    _steps = 0;
-		// }
 	}
 }
-
-
 
 void Server::AcceptClient()
 {
@@ -306,7 +298,7 @@ void Server::printtabclient_fd(std::vector<Client> _clients)
 
 void Server::ReceiveNewData(int fd)
 {
-    char buffer[2048]; // change to 10000 for bonus
+    char buffer[1042]; // change to 10000 for bonus
     memset(buffer, 0, sizeof(buffer));
     int bytes_read = recv(fd, buffer, sizeof(buffer) - 1, 0);
 
