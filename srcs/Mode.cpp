@@ -45,7 +45,7 @@ std::string Server::InviteOnlyMode(t_input *input, std::string params, Channel *
     std::string modeMsg = MODE_MSG_NEW;
     if (input->prefix[0] == '+')
     {
-        if (channel->getInvite())
+        if (!channel->getInvite())
         {
             return "";
         }
